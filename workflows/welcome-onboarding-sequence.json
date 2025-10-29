@@ -1,0 +1,403 @@
+{
+  "name": "Welcome & Onboarding Email Sequence",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily Check (9 AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "read",
+        "sheetName": "New Signups",
+        "range": "A:E",
+        "options": {}
+      },
+      "id": "google-sheets-fetch",
+      "name": "Fetch New Signups",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [450, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-sheets-credential",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.email_sent}}",
+              "operation": "isEmpty"
+            },
+            {
+              "value1": "={{$json.email}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "filter-unsent",
+      "name": "Filter Unsent",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {
+          "systemMessage": "You are a friendly onboarding specialist. Create a warm, welcoming email that introduces the product and sets clear expectations.",
+          "temperature": 0.7
+        },
+        "prompt": "=Create a welcome email for {{$json.name}}. They just signed up for our service. Include: 1) Warm welcome 2) What to expect next 3) Getting started tips 4) Support contact. Keep it friendly and under 200 words."
+      },
+      "id": "openai-email1",
+      "name": "Generate Welcome Email",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [850, 200],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-credential",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "welcome@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "Welcome to [Company Name]! Let's get started",
+        "emailFormat": "html",
+        "html": "={{$json.generated_email}}",
+        "options": {}
+      },
+      "id": "send-email1",
+      "name": "Send Welcome Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1050, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "days"
+      },
+      "id": "wait-2days",
+      "name": "Wait 2 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1250, 200],
+      "webhookId": "wait-webhook-1"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {
+          "systemMessage": "You are a product expert. Create an educational email highlighting key features and their benefits.",
+          "temperature": 0.7
+        },
+        "prompt": "=Create a value-focused email for {{$json.name}}. Highlight our top 3 features: [Feature 1], [Feature 2], [Feature 3]. Include customer success stories and social proof. Keep it under 250 words."
+      },
+      "id": "openai-email2",
+      "name": "Generate Value Email",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [1450, 200],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-credential",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "hello@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "See what you can do with [Product Name]",
+        "emailFormat": "html",
+        "html": "={{$json.generated_email}}",
+        "options": {}
+      },
+      "id": "send-email2",
+      "name": "Send Value Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1650, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "days"
+      },
+      "id": "wait-4days",
+      "name": "Wait 2 More Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1850, 200],
+      "webhookId": "wait-webhook-2"
+    },
+    {
+      "parameters": {
+        "fromEmail": "resources@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "Free resource: [Guide Title]",
+        "emailFormat": "html",
+        "html": "<p>Hi {{$json.name}},</p><p>We've put together a comprehensive guide to help you get the most out of [Product Name].</p><p><strong><a href='https://company.com/free-guide'>Download Your Free Guide</a></strong></p><p>Inside you'll find:</p><ul><li>Step-by-step tutorials</li><li>Pro tips from power users</li><li>Common troubleshooting solutions</li></ul><p>Happy learning!<br>The [Company] Team</p>",
+        "options": {}
+      },
+      "id": "send-email3",
+      "name": "Send Resource Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2050, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "wait-7days",
+      "name": "Wait 3 More Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2250, 200],
+      "webhookId": "wait-webhook-3"
+    },
+    {
+      "parameters": {
+        "fromEmail": "team@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "Ready to take the next step?",
+        "emailFormat": "html",
+        "html": "<p>Hi {{$json.name}},</p><p>You've been exploring [Product Name] for a week now. We'd love to hear about your experience!</p><p><strong>Schedule a 15-minute call with our team:</strong></p><p><a href='https://calendly.com/company/demo' style='background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;'>Book Your Call</a></p><p>Or if you have questions, just reply to this email. We're here to help!</p><p>Best regards,<br>The [Company] Team</p>",
+        "options": {}
+      },
+      "id": "send-email4",
+      "name": "Send Invitation Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2450, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "sheetName": "New Signups",
+        "range": "={{$json.row_number}}:={{$json.row_number}}",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        },
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "E",
+              "fieldValue": "=Completed"
+            },
+            {
+              "column": "F",
+              "fieldValue": "={{$now.toISO()}}"
+            }
+          ]
+        }
+      },
+      "id": "update-sheet",
+      "name": "Mark as Completed",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [2650, 200],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-sheets-credential",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily Check (9 AM)": {
+      "main": [
+        [
+          {
+            "node": "Fetch New Signups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch New Signups": {
+      "main": [
+        [
+          {
+            "node": "Filter Unsent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Unsent": {
+      "main": [
+        [
+          {
+            "node": "Generate Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Wait 2 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2 Days": {
+      "main": [
+        [
+          {
+            "node": "Generate Value Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Value Email": {
+      "main": [
+        [
+          {
+            "node": "Send Value Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Value Email": {
+      "main": [
+        [
+          {
+            "node": "Wait 2 More Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2 More Days": {
+      "main": [
+        [
+          {
+            "node": "Send Resource Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Resource Email": {
+      "main": [
+        [
+          {
+            "node": "Wait 3 More Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 More Days": {
+      "main": [
+        [
+          {
+            "node": "Send Invitation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Invitation Email": {
+      "main": [
+        [
+          {
+            "node": "Mark as Completed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "pinData": {},
+  "meta": {
+    "templateId": "welcome-onboarding-v1",
+    "templateCreatedBy": "Claude B",
+    "description": "4-email welcome sequence sent over 7 days with AI-generated personalization"
+  }
+}

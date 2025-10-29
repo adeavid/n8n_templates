@@ -1,0 +1,458 @@
+{
+  "name": "Abandoned Cart Recovery Sequence",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "cart-abandoned",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Cart Abandoned Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "cart-abandoned-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.cart_value}}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{$json.email}}",
+              "operation": "isNotEmpty"
+            }
+          ],
+          "number": [
+            {
+              "value1": "={{$json.cart_value}}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "id": "validate-cart",
+      "name": "Validate Cart Data",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetName": "Abandoned Carts",
+        "options": {},
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "email",
+              "fieldValue": "={{$json.email}}"
+            },
+            {
+              "column": "cart_items",
+              "fieldValue": "={{$json.items}}"
+            },
+            {
+              "column": "cart_value",
+              "fieldValue": "={{$json.cart_value}}"
+            },
+            {
+              "column": "abandoned_at",
+              "fieldValue": "={{$now.toISO()}}"
+            },
+            {
+              "column": "status",
+              "fieldValue": "pending"
+            }
+          ]
+        }
+      },
+      "id": "log-to-sheet",
+      "name": "Log Abandoned Cart",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [650, 200],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-sheets-credential",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "hours"
+      },
+      "id": "wait-1hour",
+      "name": "Wait 1 Hour",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [850, 200],
+      "webhookId": "wait-abandoned-1"
+    },
+    {
+      "parameters": {
+        "fromEmail": "shop@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "You left something behind...",
+        "emailFormat": "html",
+        "html": "=<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>\n  <h2>Hi {{$json.customer_name}},</h2>\n  <p>We noticed you left some items in your cart. Don't worry, we've saved them for you!</p>\n  \n  <div style='background-color: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px;'>\n    <h3>Your Cart:</h3>\n    {{$json.cart_items_html}}\n    <p style='font-size: 18px; font-weight: bold; margin-top: 15px;'>Total: ${{$json.cart_value}}</p>\n  </div>\n  \n  <a href='{{$json.cart_url}}' style='background-color: #0066cc; color: white; padding: 15px 30px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;'>Complete Your Purchase</a>\n  \n  <p style='margin-top: 30px; color: #666;'>Need help? Just reply to this email or contact our support team.</p>\n</div>",
+        "options": {}
+      },
+      "id": "send-email-1",
+      "name": "Send Reminder (1 hour)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1050, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 23,
+        "unit": "hours"
+      },
+      "id": "wait-24hours",
+      "name": "Wait 23 More Hours",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1250, 200],
+      "webhookId": "wait-abandoned-2"
+    },
+    {
+      "parameters": {
+        "url": "={{$json.api_endpoint}}/order/{{$json.order_id}}/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "check-purchase",
+      "name": "Check If Purchased",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1450, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.order_status}}",
+              "operation": "notEqual",
+              "value2": "completed"
+            }
+          ]
+        }
+      },
+      "id": "if-not-purchased",
+      "name": "If Not Purchased",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1650, 200]
+    },
+    {
+      "parameters": {
+        "fromEmail": "shop@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "Still thinking it over? Here's what others love...",
+        "emailFormat": "html",
+        "html": "=<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>\n  <h2>Hi {{$json.customer_name}},</h2>\n  <p>We understand choosing the right products takes time. Here's what other customers love about the items in your cart:</p>\n  \n  <div style='background-color: #f9f9f9; padding: 20px; margin: 20px 0; border-radius: 8px;'>\n    <h3>⭐ Customer Reviews:</h3>\n    <p style='font-style: italic;'>\"Amazing quality! Exactly what I was looking for.\" - Sarah M.</p>\n    <p style='font-style: italic;'>\"Fast shipping and great customer service!\" - John D.</p>\n  </div>\n  \n  <div style='background-color: #e8f5e9; padding: 20px; margin: 20px 0; border-radius: 8px;'>\n    <h3>✓ Why Buy From Us:</h3>\n    <ul>\n      <li>Free shipping on orders over $50</li>\n      <li>30-day money-back guarantee</li>\n      <li>24/7 customer support</li>\n      <li>Secure checkout</li>\n    </ul>\n  </div>\n  \n  <p><strong>Your cart total: ${{$json.cart_value}}</strong></p>\n  \n  <a href='{{$json.cart_url}}' style='background-color: #0066cc; color: white; padding: 15px 30px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;'>Complete Your Order</a>\n  \n  <p style='margin-top: 30px; color: #666;'>Questions? We're here to help! Reply to this email anytime.</p>\n</div>",
+        "options": {}
+      },
+      "id": "send-email-2",
+      "name": "Send Social Proof (24h)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1850, 100],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "days"
+      },
+      "id": "wait-3days",
+      "name": "Wait 2 More Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2050, 100],
+      "webhookId": "wait-abandoned-3"
+    },
+    {
+      "parameters": {
+        "url": "={{$json.api_endpoint}}/order/{{$json.order_id}}/status",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "check-purchase-2",
+      "name": "Check Purchase Again",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2250, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.order_status}}",
+              "operation": "notEqual",
+              "value2": "completed"
+            }
+          ]
+        }
+      },
+      "id": "if-still-not-purchased",
+      "name": "If Still Not Purchased",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2450, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cartValue = parseFloat($input.item.json.cart_value);\nlet discountPercent = 10;\n\nif (cartValue > 100) {\n  discountPercent = 15;\n} else if (cartValue > 200) {\n  discountPercent = 20;\n}\n\nconst discountCode = 'COMEBACK' + discountPercent;\nconst discountAmount = (cartValue * discountPercent / 100).toFixed(2);\nconst newTotal = (cartValue - discountAmount).toFixed(2);\n\nreturn {\n  ...input.item.json,\n  discount_percent: discountPercent,\n  discount_code: discountCode,\n  discount_amount: discountAmount,\n  new_total: newTotal\n};"
+      },
+      "id": "calculate-discount",
+      "name": "Calculate Discount",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2650, 0]
+    },
+    {
+      "parameters": {
+        "fromEmail": "shop@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "Last chance: {{$json.discount_percent}}% OFF your cart!",
+        "emailFormat": "html",
+        "html": "=<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>\n  <div style='background-color: #ff6b6b; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;'>\n    <h1 style='margin: 0;'>⏰ SPECIAL OFFER INSIDE</h1>\n  </div>\n  \n  <div style='padding: 30px; background-color: #fff;'>\n    <h2>Hi {{$json.customer_name}},</h2>\n    <p>We really want you to have these items! As a special thank you for considering us, here's an exclusive discount:</p>\n    \n    <div style='background-color: #fff3cd; border: 2px dashed #ffc107; padding: 25px; margin: 25px 0; text-align: center; border-radius: 8px;'>\n      <h2 style='color: #ff6b6b; margin: 0 0 10px 0;'>{{$json.discount_percent}}% OFF</h2>\n      <p style='font-size: 24px; font-weight: bold; margin: 10px 0;'>Code: {{$json.discount_code}}</p>\n      <p style='color: #666; margin: 10px 0 0 0;'>⏰ Expires in 48 hours</p>\n    </div>\n    \n    <div style='background-color: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px;'>\n      <p style='margin: 5px 0;'>Original Total: <span style='text-decoration: line-through;'>${{$json.cart_value}}</span></p>\n      <p style='margin: 5px 0;'>Your Discount: -${{$json.discount_amount}}</p>\n      <p style='margin: 5px 0; font-size: 20px; font-weight: bold; color: #0066cc;'>New Total: ${{$json.new_total}}</p>\n    </div>\n    \n    <div style='text-align: center; margin: 30px 0;'>\n      <a href='{{$json.cart_url}}?discount={{$json.discount_code}}' style='background-color: #0066cc; color: white; padding: 18px 40px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold; font-size: 16px;'>CLAIM YOUR DISCOUNT</a>\n    </div>\n    \n    <p style='color: #666; font-size: 14px; margin-top: 30px;'>This is our final email about these items. We'll save your cart for 7 days, but this discount won't last!</p>\n  </div>\n</div>",
+        "options": {}
+      },
+      "id": "send-email-3",
+      "name": "Send Discount Offer (3 days)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2850, 0],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "sheetName": "Abandoned Carts",
+        "range": "={{$json.row_number}}:={{$json.row_number}}",
+        "options": {},
+        "dataToSend": "defineBelow",
+        "fieldsUi": {
+          "values": [
+            {
+              "column": "status",
+              "fieldValue": "sequence_completed"
+            },
+            {
+              "column": "last_email_sent",
+              "fieldValue": "={{$now.toISO()}}"
+            }
+          ]
+        }
+      },
+      "id": "update-status",
+      "name": "Update Campaign Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [3050, 0],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "google-sheets-credential",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cart Abandoned Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate Cart Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Cart Data": {
+      "main": [
+        [
+          {
+            "node": "Log Abandoned Cart",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Abandoned Cart": {
+      "main": [
+        [
+          {
+            "node": "Wait 1 Hour",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1 Hour": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder (1 hour)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder (1 hour)": {
+      "main": [
+        [
+          {
+            "node": "Wait 23 More Hours",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 23 More Hours": {
+      "main": [
+        [
+          {
+            "node": "Check If Purchased",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Purchased": {
+      "main": [
+        [
+          {
+            "node": "If Not Purchased",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Not Purchased": {
+      "main": [
+        [
+          {
+            "node": "Send Social Proof (24h)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Social Proof (24h)": {
+      "main": [
+        [
+          {
+            "node": "Wait 2 More Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2 More Days": {
+      "main": [
+        [
+          {
+            "node": "Check Purchase Again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Purchase Again": {
+      "main": [
+        [
+          {
+            "node": "If Still Not Purchased",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Still Not Purchased": {
+      "main": [
+        [
+          {
+            "node": "Calculate Discount",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Discount": {
+      "main": [
+        [
+          {
+            "node": "Send Discount Offer (3 days)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Discount Offer (3 days)": {
+      "main": [
+        [
+          {
+            "node": "Update Campaign Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "pinData": {},
+  "meta": {
+    "templateId": "abandoned-cart-v1",
+    "templateCreatedBy": "Claude B",
+    "description": "3-email abandoned cart recovery sequence with dynamic discounts and purchase status checking"
+  }
+}
