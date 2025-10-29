@@ -36,4 +36,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 - When a lane is complete, open a draft PR from your branch so others can comment.
 
 ## Activity Log
-- *[YYYY-MM-DD HH:MM]* Agent: notes...
+- *[2025-10-29 20:00]* Codex B: Starting TikTok automation template sweep; target 3-5 advanced candidates for `research/tiktok.md`.
+- *[2025-10-29 20:12]* Codex B: Identified six high-end TikTok automation templates (IDs 4969, 3501, 3004, 7187, 4110, 6516) and queued deep-dive notes.
+- *[2025-10-29 20:15]* Codex B: Added prerequisites and key node breakdowns for shortlisted templates plus Bright Data scraper bonus entry.
+- *[2025-10-29 20:17]* Codex B: Logged YouTube Shorts repost workflow and externals for TikTok Shop/AI agents to `research/tiktok.md`.
+- *[2025-10-29 20:20]* Codex B: Shortlist finalized with reusable building blocks + follow-up ideas documented.
