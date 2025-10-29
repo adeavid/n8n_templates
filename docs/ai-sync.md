@@ -35,5 +35,12 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 - Every ~30 minutes or after major finding, drop a status line in Activity Log.
 - When a lane is complete, open a draft PR from your branch so others can comment.
 
+### Interaction shorthand
+- "continua" / "ok sigue" / "continue workflow": reread this doc, check your lane's open TODOs, and advance the next actionable task without additional prompting.
+- "sync" / "status": post a quick update in the Activity Log, then summarize blockers if any.
+- "handoff to <agent>": document pending work, commit current progress, and ping the named agent via Activity Log entry.
+- If a command is unclear, ask once in Activity Log before proceeding.
+
 ## Activity Log
-- *[YYYY-MM-DD HH:MM]* Agent: notes...
+- *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
+- *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
