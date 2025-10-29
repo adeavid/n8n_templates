@@ -1,0 +1,521 @@
+{
+  "name": "B2B Lead Nurturing Sequence",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "lead-captured",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Lead Form Submitted",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 400],
+      "webhookId": "lead-captured-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.email}}",
+              "operation": "isNotEmpty"
+            },
+            {
+              "value1": "={{$json.company}}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "validate-lead",
+      "name": "Validate Lead Data",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [450, 400]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "objectType": "contact",
+        "properties": {
+          "email": "={{$json.email}}",
+          "firstname": "={{$json.first_name}}",
+          "lastname": "={{$json.last_name}}",
+          "company": "={{$json.company}}",
+          "phone": "={{$json.phone}}",
+          "lead_source": "={{$json.source}}",
+          "lifecycle_stage": "lead"
+        }
+      },
+      "id": "create-crm-contact",
+      "name": "Create CRM Contact",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [650, 300],
+      "credentials": {
+        "hubspotApi": {
+          "id": "hubspot-credential",
+          "name": "HubSpot account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{$json.enrichment_api}}/company/{{$json.company}}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "enrich-company-data",
+      "name": "Enrich Company Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const companySize = $input.item.json.company_size || 0;\nconst industry = $input.item.json.industry || 'general';\nconst budget = $input.item.json.estimated_budget || 0;\n\nlet leadScore = 0;\n\nif (companySize > 50) leadScore += 20;\nif (companySize > 200) leadScore += 30;\nif (budget > 10000) leadScore += 25;\nif (['technology', 'finance', 'healthcare'].includes(industry.toLowerCase())) leadScore += 15;\nif ($input.item.json.job_title && $input.item.json.job_title.match(/director|vp|ceo|cto|manager/i)) leadScore += 20;\n\nlet segment = 'cold';\nif (leadScore >= 70) segment = 'hot';\nelse if (leadScore >= 40) segment = 'warm';\n\nreturn {\n  ...$input.item.json,\n  lead_score: leadScore,\n  segment: segment\n};"
+      },
+      "id": "score-lead",
+      "name": "Calculate Lead Score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.segment}}",
+              "operation": "equals",
+              "value2": "hot"
+            }
+          ]
+        }
+      },
+      "id": "route-by-score",
+      "name": "Route by Score",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1250, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "sales@company.com",
+        "toEmail": "sales-team@company.com",
+        "subject": "🔥 Hot Lead Alert: {{$json.first_name}} {{$json.last_name}} from {{$json.company}}",
+        "emailFormat": "html",
+        "html": "=<div style='font-family: Arial, sans-serif;'>\n  <h2 style='color: #ff6b6b;'>High-Value Lead Captured!</h2>\n  <p><strong>Lead Score: {{$json.lead_score}}/100</strong></p>\n  \n  <h3>Contact Information:</h3>\n  <ul>\n    <li>Name: {{$json.first_name}} {{$json.last_name}}</li>\n    <li>Company: {{$json.company}}</li>\n    <li>Title: {{$json.job_title}}</li>\n    <li>Email: {{$json.email}}</li>\n    <li>Phone: {{$json.phone}}</li>\n  </ul>\n  \n  <h3>Company Details:</h3>\n  <ul>\n    <li>Industry: {{$json.industry}}</li>\n    <li>Size: {{$json.company_size}} employees</li>\n    <li>Estimated Budget: ${{$json.estimated_budget}}</li>\n  </ul>\n  \n  <p><strong>Action Required:</strong> Follow up within 24 hours for best results.</p>\n</div>",
+        "options": {}
+      },
+      "id": "alert-sales-team",
+      "name": "Alert Sales Team (Hot Lead)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1450, 100],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "hello@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "Thanks for downloading: {{$json.resource_name}}",
+        "emailFormat": "html",
+        "html": "=<div style='font-family: Arial, sans-serif; max-width: 600px;'>\n  <h2>Hi {{$json.first_name}},</h2>\n  <p>Thank you for downloading our {{$json.resource_name}}! Here's your copy:</p>\n  \n  <div style='background-color: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; text-align: center;'>\n    <a href='{{$json.resource_url}}' style='background-color: #0066cc; color: white; padding: 15px 30px; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: bold;'>Download Now</a>\n  </div>\n  \n  <h3>What's Next?</h3>\n  <p>Over the next few days, we'll share more insights about how {{$json.company}} can benefit from our solutions.</p>\n  \n  <p>In the meantime, feel free to:</p>\n  <ul>\n    <li><a href='https://company.com/case-studies'>Browse case studies</a> from companies like yours</li>\n    <li><a href='https://company.com/demo'>Schedule a demo</a> with our team</li>\n    <li>Reply to this email with any questions</li>\n  </ul>\n  \n  <p>Best regards,<br>{{$json.sender_name}}<br>{{$json.sender_title}}</p>\n</div>",
+        "options": {}
+      },
+      "id": "send-resource-email",
+      "name": "Send Resource + Welcome",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1450, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "wait-3days",
+      "name": "Wait 3 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1650, 300],
+      "webhookId": "wait-nurture-1"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {
+          "systemMessage": "You are a B2B content specialist. Create educational email content that provides value without being salesy.",
+          "temperature": 0.7
+        },
+        "prompt": "=Create an educational email for {{$json.first_name}} from {{$json.company}} in the {{$json.industry}} industry. Topic: How companies in their industry solve [common pain point]. Include 1 relevant case study, 3 actionable tips, and 1 soft CTA to learn more. Keep it under 300 words and professional."
+      },
+      "id": "generate-education-email",
+      "name": "Generate Educational Content",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [1850, 300],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-credential",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "insights@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "How {{$json.industry}} companies are solving [pain point]",
+        "emailFormat": "html",
+        "html": "={{$json.generated_content}}",
+        "options": {}
+      },
+      "id": "send-education-email",
+      "name": "Send Educational Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2050, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 7,
+        "unit": "days"
+      },
+      "id": "wait-7days",
+      "name": "Wait 7 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2250, 300],
+      "webhookId": "wait-nurture-2"
+    },
+    {
+      "parameters": {
+        "fromEmail": "solutions@company.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "{{$json.company}} vs. [Competitor A] vs. [Competitor B]: An honest comparison",
+        "emailFormat": "html",
+        "html": "=<div style='font-family: Arial, sans-serif; max-width: 600px;'>\n  <h2>Hi {{$json.first_name}},</h2>\n  <p>When evaluating solutions for {{$json.industry}}, it's important to compare your options. Here's an honest breakdown:</p>\n  \n  <table style='width: 100%; border-collapse: collapse; margin: 20px 0;'>\n    <tr style='background-color: #f5f5f5;'>\n      <th style='border: 1px solid #ddd; padding: 12px; text-align: left;'>Feature</th>\n      <th style='border: 1px solid #ddd; padding: 12px;'>Us</th>\n      <th style='border: 1px solid #ddd; padding: 12px;'>Competitor A</th>\n      <th style='border: 1px solid #ddd; padding: 12px;'>Competitor B</th>\n    </tr>\n    <tr>\n      <td style='border: 1px solid #ddd; padding: 12px;'>Implementation Time</td>\n      <td style='border: 1px solid #ddd; padding: 12px; text-align: center;'>2 weeks</td>\n      <td style='border: 1px solid #ddd; padding: 12px; text-align: center;'>6 weeks</td>\n      <td style='border: 1px solid #ddd; padding: 12px; text-align: center;'>4 weeks</td>\n    </tr>\n    <tr>\n      <td style='border: 1px solid #ddd; padding: 12px;'>Support Response</td>\n      <td style='border: 1px solid #ddd; padding: 12px; text-align: center;'>< 1 hour</td>\n      <td style='border: 1px solid #ddd; padding: 12px; text-align: center;'>24 hours</td>\n      <td style='border: 1px solid #ddd; padding: 12px; text-align: center;'>4 hours</td>\n    </tr>\n    <tr>\n      <td style='border: 1px solid #ddd; padding: 12px;'>Customization</td>\n      <td style='border: 1px solid #ddd; padding: 12px; text-align: center;'>✅ Full</td>\n      <td style='border: 1px solid #ddd; padding: 12px; text-align: center;'>❌ Limited</td>\n      <td style='border: 1px solid #ddd; padding: 12px; text-align: center;'>⚠️ Moderate</td>\n    </tr>\n  </table>\n  \n  <div style='background-color: #e3f2fd; padding: 20px; margin: 20px 0; border-radius: 8px;'>\n    <h3>Why {{$json.industry}} companies choose us:</h3>\n    <ul>\n      <li>Industry-specific features built for your needs</li>\n      <li>White-glove onboarding and training</li>\n      <li>Proven ROI with {{$json.industry}} clients</li>\n    </ul>\n  </div>\n  \n  <p><a href='https://company.com/comparison-guide' style='color: #0066cc;'>Download the full comparison guide →</a></p>\n  \n  <p>Ready to see how we stack up for {{$json.company}}?</p>\n  <a href='https://calendly.com/company/demo' style='background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;'>Schedule a Demo</a>\n  \n  <p style='margin-top: 30px;'>Best,<br>{{$json.sender_name}}</p>\n</div>",
+        "options": {}
+      },
+      "id": "send-comparison-email",
+      "name": "Send Product Comparison",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2450, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 14,
+        "unit": "days"
+      },
+      "id": "wait-14days",
+      "name": "Wait 14 Days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2650, 300],
+      "webhookId": "wait-nurture-3"
+    },
+    {
+      "parameters": {
+        "url": "={{$json.crm_api}}/contact/{{$json.contact_id}}/engagement",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {}
+      },
+      "id": "check-engagement",
+      "name": "Check Email Engagement",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2850, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$json.email_opens}}",
+              "operation": "largerEqual",
+              "value2": 2
+            }
+          ]
+        }
+      },
+      "id": "if-engaged",
+      "name": "If Engaged",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [3050, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "{{$json.sender_email}}",
+        "toEmail": "={{$json.email}}",
+        "subject": "Quick question about {{$json.company}}'s needs",
+        "emailFormat": "html",
+        "html": "=<div style='font-family: Arial, sans-serif; max-width: 600px;'>\n  <h2>Hi {{$json.first_name}},</h2>\n  <p>I've been following your engagement with our content over the past few weeks, and I wanted to reach out personally.</p>\n  \n  <p>I'd love to learn more about {{$json.company}}'s specific challenges and see if our solution would be a good fit.</p>\n  \n  <p><strong>Would you be open to a 15-minute call?</strong></p>\n  \n  <p>I can share:</p>\n  <ul>\n    <li>How companies like {{$json.company}} use our platform</li>\n    <li>Custom strategies for the {{$json.industry}} industry</li>\n    <li>Answers to any questions you have</li>\n  </ul>\n  \n  <p><a href='https://calendly.com/{{$json.sender_calendly}}' style='background-color: #0066cc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;'>Book a Time That Works</a></p>\n  \n  <p>Or if you prefer, just reply with your availability and I'll send over some times.</p>\n  \n  <p>Looking forward to connecting!</p>\n  \n  <p>{{$json.sender_name}}<br>\n  {{$json.sender_title}}<br>\n  {{$json.sender_phone}}</p>\n</div>",
+        "options": {}
+      },
+      "id": "send-personal-outreach",
+      "name": "Send Personal Outreach",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [3250, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credential",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "objectType": "contact",
+        "contactId": "={{$json.contact_id}}",
+        "properties": {
+          "lifecycle_stage": "marketing_qualified_lead",
+          "lead_status": "nurture_sequence_complete"
+        }
+      },
+      "id": "update-crm-status",
+      "name": "Update CRM to MQL",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [3450, 200],
+      "credentials": {
+        "hubspotApi": {
+          "id": "hubspot-credential",
+          "name": "HubSpot account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Lead Form Submitted": {
+      "main": [
+        [
+          {
+            "node": "Validate Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Create CRM Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create CRM Contact": {
+      "main": [
+        [
+          {
+            "node": "Enrich Company Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich Company Data": {
+      "main": [
+        [
+          {
+            "node": "Calculate Lead Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Lead Score": {
+      "main": [
+        [
+          {
+            "node": "Route by Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Score": {
+      "main": [
+        [
+          {
+            "node": "Alert Sales Team (Hot Lead)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Resource + Welcome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Resource + Welcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Resource + Welcome": {
+      "main": [
+        [
+          {
+            "node": "Wait 3 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 Days": {
+      "main": [
+        [
+          {
+            "node": "Generate Educational Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Educational Content": {
+      "main": [
+        [
+          {
+            "node": "Send Educational Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Educational Email": {
+      "main": [
+        [
+          {
+            "node": "Wait 7 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 7 Days": {
+      "main": [
+        [
+          {
+            "node": "Send Product Comparison",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Product Comparison": {
+      "main": [
+        [
+          {
+            "node": "Wait 14 Days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 14 Days": {
+      "main": [
+        [
+          {
+            "node": "Check Email Engagement",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Email Engagement": {
+      "main": [
+        [
+          {
+            "node": "If Engaged",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Engaged": {
+      "main": [
+        [
+          {
+            "node": "Send Personal Outreach",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Personal Outreach": {
+      "main": [
+        [
+          {
+            "node": "Update CRM to MQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "pinData": {},
+  "meta": {
+    "templateId": "b2b-lead-nurturing-v1",
+    "templateCreatedBy": "Claude B",
+    "description": "4-email B2B lead nurturing sequence with lead scoring, company enrichment, and engagement-based routing"
+  }
+}
