@@ -35,9 +35,20 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 - Every ~30 minutes or after major finding, drop a status line in Activity Log.
 - When a lane is complete, open a draft PR from your branch so others can comment.
 
+### Interaction shorthand
+- "continua" / "ok sigue" / "continue workflow": reread this doc, check your lane's open TODOs, and advance the next actionable task without additional prompting.
+- "sync" / "status": post a quick update in the Activity Log, then summarize blockers if any.
+- "handoff to <agent>": document pending work, commit current progress, and ping the named agent via Activity Log entry.
+- If a command is unclear, ask once in Activity Log before proceeding.
+
 ## Activity Log
+
 - *[2025-10-29 20:00]* Codex B: Starting TikTok automation template sweep; target 3-5 advanced candidates for `research/tiktok.md`.
 - *[2025-10-29 20:12]* Codex B: Identified six high-end TikTok automation templates (IDs 4969, 3501, 3004, 7187, 4110, 6516) and queued deep-dive notes.
 - *[2025-10-29 20:15]* Codex B: Added prerequisites and key node breakdowns for shortlisted templates plus Bright Data scraper bonus entry.
 - *[2025-10-29 20:17]* Codex B: Logged YouTube Shorts repost workflow and externals for TikTok Shop/AI agents to `research/tiktok.md`.
 - *[2025-10-29 20:20]* Codex B: Shortlist finalized with reusable building blocks + follow-up ideas documented.
+
+- *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
+- *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
+
