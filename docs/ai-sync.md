@@ -45,21 +45,15 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
 
-La serie que llegó a los modelos era de ceros (el SeasonalNaive copia valores, no puede producir 0 si recibió la serie real). El target se pierde entre branch_360_50 y el modelo. Bisecta la cadena, en orden, y para en cuanto encuentres el punto donde el target muere:
+Diagnóstico convincente, pero necesito clavarlo antes de reportarlo como hallazgo. Tres bloques, NO toques ningún archivo del repo:
 
-1. TABLA DE TRAINING (salida de la tarea create-training, la df_training_..._50):
-   - nombre exacto de la columna target y sus stats: nº de no-nulos, nº de valores distintos, mín/máx, % de ceros.
-   - Si aquí ya es todo ceros o nulos → el problema está en create_training: sigue al paso 2.
-   - Si aquí está viva → el problema está en la preparación de run_predictions: salta al paso 3.
+A) EVIDENCIA (para el hallazgo):
+1. Archivo:línea de: (a) dónde se genera la cuadrícula con timestamps, (b) el join temporal, (c) el fillna(y=0).
+2. Confirma spark.sql.session.timeZone del job cluster actual (y si puedes, del cluster interactivo donde corrimos en julio — hipótesis: UTC, por eso entonces funcionó).
+3. Prueba de contraste: repite el conteo de matches casteando AMBOS lados a DATE — espero 55.500/55.500. Ese número es la demostración de que el desfase tz es la única causa.
 
-2. SI EL TARGET MUERE EN CREATE_TRAINING:
-   - ¿Qué tabla origen leyó exactamente? (resuelve el nombre desde el config del entorno lab-adb y confirma que es la _50 poblada, no otra vacía o mal apuntada).
-   - Los JOIN de la construcción de la cuadrícula: compara los TIPOS y el FORMATO de las claves a ambos lados — idcent (¿string con ceros a la izquierda tipo "0001" vs int?) y fecha (¿date vs timestamp? ¿mismo formato?).
-   - Dame el conteo de filas que MATCHEAN en ese join contra el total de la cuadrícula (espero encontrar 0 o casi 0 matches).
+B) WORKAROUND PARA CERRAR T1 (solo configuración, cero código):
+Propón añadir spark.sql.session.timeZone=UTC en el spark_conf del new_cluster del JSON del job (ojo: en spark_conf, no spark_env_vars — ya nos pasó que la API ignora lo mal ubicado). Dame el fragmento JSON exacto y dónde va; lo aplico yo y relanzo con los mismos parámetros. Después repetimos el sanity completo (esperado: 700 filas, valores no triviales y distintos por modelo).
 
-3. SI EL TARGET LLEGA VIVO AL TRAINING:
-   - Repite el mismo análisis sobre la preparación de datos dentro de run_predictions (el df que se pasa a los modelos): stats del target justo antes del fit, y cualquier join/filtro intermedio con sus claves.
-
-4. En ambos casos: ¿cuántas oficinas pasaron el filtro de observaciones mínimas (~57)? Con 3 años de histórico deberían ser 50/50 — si son 50 pese a target cero, anótalo: el filtro cuenta filas, no valores útiles.
-
-Cosecha: solo conteos, tipos, nombres de columnas y stats — nada de filas de datos.
+C) BORRADOR DE HALLAZGO H9 (mismo formato que H1-H8):
+"El join temporal de create_training depende del timezone del cluster: con tz local (Europe/Madrid), 0 matches y el fillna convierte el 100% del target en ceros — silenciosamente, con job verde". Incluye: cuándo muerde (cualquier cluster con tz local = toda la red a cero sin aviso), evidencia archivo:línea + el conteo de contraste, y propuesta (join con semántica DATE en ambos lados como fix robusto; fijar timezone por config es mitigación, no solución). Candidato a test de caracterización.
