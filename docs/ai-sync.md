@@ -44,16 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
+Confirmado, doy H9 por verificado. Aplico yo el cambio: edito el JSON del job añadiendo spark.sql.session.timeZone=UTC dentro de settings.job_clusters[0].new_cluster.spark_conf (fusionando con las claves existentes, sin borrar ninguna) y relanzo con los mismos parámetros. Mientras corre, déjame listo el sanity final para ejecutarlo en cuanto acabe, con un añadido:
 
-Diagnóstico convincente, pero necesito clavarlo antes de reportarlo como hallazgo. Tres bloques, NO toques ningún archivo del repo:
-
-A) EVIDENCIA (para el hallazgo):
-1. Archivo:línea de: (a) dónde se genera la cuadrícula con timestamps, (b) el join temporal, (c) el fillna(y=0).
-2. Confirma spark.sql.session.timeZone del job cluster actual (y si puedes, del cluster interactivo donde corrimos en julio — hipótesis: UTC, por eso entonces funcionó).
-3. Prueba de contraste: repite el conteo de matches casteando AMBOS lados a DATE — espero 55.500/55.500. Ese número es la demostración de que el desfase tz es la única causa.
-
-B) WORKAROUND PARA CERRAR T1 (solo configuración, cero código):
-Propón añadir spark.sql.session.timeZone=UTC en el spark_conf del new_cluster del JSON del job (ojo: en spark_conf, no spark_env_vars — ya nos pasó que la API ignora lo mal ubicado). Dame el fragmento JSON exacto y dónde va; lo aplico yo y relanzo con los mismos parámetros. Después repetimos el sanity completo (esperado: 700 filas, valores no triviales y distintos por modelo).
-
-C) BORRADOR DE HALLAZGO H9 (mismo formato que H1-H8):
-"El join temporal de create_training depende del timezone del cluster: con tz local (Europe/Madrid), 0 matches y el fillna convierte el 100% del target en ceros — silenciosamente, con job verde". Incluye: cuándo muerde (cualquier cluster con tz local = toda la red a cero sin aviso), evidencia archivo:línea + el conteo de contraste, y propuesta (join con semántica DATE en ambos lados como fix robusto; fijar timezone por config es mitigación, no solución). Candidato a test de caracterización.
+- Los 7 checks de siempre (700 filas, 50 oficinas, 14 fechas D+1..D+14, 0 nulos, columnas de los 3 modelos, valores no triviales y distintos entre modelos, conteo de training).
+- NUEVO: duplicados. El run malo ya escribió en las tablas de training y predicciones. Verifica si el nuevo run SOBRESCRIBE la partición del odate o AÑADE — si añade, tendríamos las filas a cero conviviendo con las buenas (y sabemos que el pivot de aguas abajo explota con duplicados). Dame: conteo de filas por (idcent, fecha) con más de 1 aparición en la tabla de predicciones, y total de filas de la tabla (si hay residuos del run malo, propón cómo limpiar la partición antes de dar por bueno el sanity — sin ejecutar nada hasta mi ok).
+- Cuando todo cuadre: el bloque de evidencia para la issue (fase 3), incluyendo el episodio completo en 3 líneas: run verde con predicciones a cero → sanity lo detectó → causa raíz H9 (join sensible a timezone) → mitigado con timezone fijado en el job y validado.
