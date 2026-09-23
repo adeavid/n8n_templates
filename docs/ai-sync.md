@@ -44,18 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Último paso de T1: el run canónico desde el artefacto oficial de la pipeline. Por fases:
+Necesito la estructura de la TABLA FINAL del pipeline como documento de una página para una reunión de decisión mañana. La tabla final = donde escribe run_expert_model (el output del criterio experto, lo que consume la aplicación aguas abajo).
 
-FASE 1 — Localizar el artefacto oficial.
-El merge a develop ya corrió en la pipeline (CloudBees). Localiza dónde publica el build el artefacto Python (¿Artifactory/Nexus? ¿con qué coordenadas y versión quedó el wheel — 1.0.1.dev0 o nomenclatura snapshot?). Dame la ruta/URL exacta de descarga. Si la pipeline no publica el wheel a repositorio y solo lo genera en el workspace del build, dime de dónde lo descargo en CloudBees.
-
-FASE 2 — Verificación de identidad.
-Antes de subir nada: compara el wheel oficial descargado con el wheel local 1.0.1.dev0 que usamos en el run validado (checksum/byte a byte, como hicimos la otra vez). Espero que sean idénticos — si difieren en algo más que metadatos de build, PARA y me lo enseñas.
-
-FASE 3 — Despliegue y limpieza previa.
-1. Comando CLI para subir el wheel oficial al volumen del lab (misma ruta que la vez anterior, perfil cash-supply-andres).
-2. jobs update parcial apuntando las libraries de las 3 tareas al wheel oficial.
-3. IMPORTANTE: el job hace append — antes de lanzar, propón cómo dejar la partición para que el run canónico no genere duplicados (¿borro las 700 filas del run anterior y el canónico escribe limpio? Prefiero eso: la evidencia final queda 100% del artefacto oficial). Sentencia exacta y espero mi ok antes de ejecutar.
-
-FASE 4 — Run y sanity exprés.
-Lanzo yo el run-now con los mismos parámetros. Después: 3 tareas SUCCESS, 700 filas, 50 oficinas, 14 fechas, 0 nulos, valores no triviales y distintos por modelo, 0 claves duplicadas. Y la línea final para la issue: "run canónico desde el artefacto de la pipeline (run <id>, wheel <versión oficial>): mismos resultados que el run validado — evidencia sin asteriscos".
+1. Localiza en el código dónde escribe el expert model su resultado: nombre físico de la tabla (resuélvelo desde config/defaults — recuerda que los defaults apuntan a PRO) y modo de escritura (append/overwrite, particionado y por qué campo).
+2. Esquema completo: lista de columnas con tipo y una línea de significado por columna, deducido del código que las construye (p. ej. cantidad por denominación, fecha de decisión, identificador de oficina...).
+3. Marca: (a) qué columnas son la "decisión" que consume la aplicación vs cuáles son metadata/intermedias; (b) si hay campos que se calculan pero NO se persisten (sé que is_feasible se pierde en el entry point — confírmalo y mira si hay más casos); (c) claves de negocio: ¿qué combinación identifica una fila (oficina+fecha+denominación?)?
+4. De propina: la tabla de decisiones del optimize (la intermedia previa al experto) — solo nombre y 1 línea, para poder explicar mañana la diferencia entre ambas.
+5. Formato de salida: tabla markdown campo|tipo|significado|¿decisión o metadata?, más 3-4 líneas de notas. Es para llevarla impresa/en pantalla, no para publicar.
