@@ -44,8 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-1. Commit en la rama fix/h9-date-join y deja preparado el PR a develop (título y descripción con referencia a H9: causa, fix, test de regresión, paridad verificada). No lo abras aún: primero valido el E2E en el lab.
-2. Ejecuto yo el plan de redeploy tal cual: bump, mvn clean package, subida del wheel con el CLI y jobs update de las libraries de las 3 tareas. Dame los comandos exactos listos para pegar, incluido el JSON parcial del jobs update.
-3. Tras el run-now: sanity completo + el check de duplicados que quedó pendiente (¿el nuevo run sobrescribe la partición del odate o conviven las filas a cero del run malo? — si conviven, propuesta de limpieza antes de dar nada por bueno).
-4. Con todo verde: bloque de evidencia de fase 3 para la issue, con el episodio completo: run verde con predicciones a cero → sanity lo cazó → H9 (join sensible a timezone; la policy del banco fija Europe/Madrid, así que sin fix afectaba a todos los entornos) → fix validado con regresión y paridad → E2E verde en lab.
-   Nota en la evidencia: este run usa wheel local 1.0.1.dev0 de la rama fix; cuando el PR entre por la pipeline, relanzamos una vez desde el artefacto oficial para dejar la validación canónica.
+Autorizo la limpieza de las 700 filas residuales a cero, con este orden:
+1. Propón el DELETE exacto (o overwrite de la partición) que elimina SOLO las filas del run malo — dime qué criterio usas para distinguirlas (timestamp de escritura, valores a cero, lo que sea inequívoco) y enséñame la sentencia antes de ejecutarla. La ejecuto yo, o la ejecutas tú tras mi ok explícito, pero no antes.
+2. Tras la limpieza, verificación final: total de filas de la partición (esperado 700), grupos duplicados por clave de negocio (esperado 0), y re-confirma que las 700 que quedan son las no-cero.
+3. Actualiza el bloque de evidencia de fase 3 con el estado final limpio (y quita la línea de "residual state") — y dámelo EN ESPAÑOL, que la issue va en español. Mantén: el episodio H9 completo, el run 195329000449239, el wheel 1.0.1.dev0 local, y la nota de que tras el merge relanzamos una vez desde el artefacto oficial.
+4. Con eso cerrado, abre el PR con el draft que preparaste.
