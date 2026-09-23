@@ -44,8 +44,18 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Autorizo la limpieza de las 700 filas residuales a cero, con este orden:
-1. Propón el DELETE exacto (o overwrite de la partición) que elimina SOLO las filas del run malo — dime qué criterio usas para distinguirlas (timestamp de escritura, valores a cero, lo que sea inequívoco) y enséñame la sentencia antes de ejecutarla. La ejecuto yo, o la ejecutas tú tras mi ok explícito, pero no antes.
-2. Tras la limpieza, verificación final: total de filas de la partición (esperado 700), grupos duplicados por clave de negocio (esperado 0), y re-confirma que las 700 que quedan son las no-cero.
-3. Actualiza el bloque de evidencia de fase 3 con el estado final limpio (y quita la línea de "residual state") — y dámelo EN ESPAÑOL, que la issue va en español. Mantén: el episodio H9 completo, el run 195329000449239, el wheel 1.0.1.dev0 local, y la nota de que tras el merge relanzamos una vez desde el artefacto oficial.
-4. Con eso cerrado, abre el PR con el draft que preparaste.
+Último paso de T1: el run canónico desde el artefacto oficial de la pipeline. Por fases:
+
+FASE 1 — Localizar el artefacto oficial.
+El merge a develop ya corrió en la pipeline (CloudBees). Localiza dónde publica el build el artefacto Python (¿Artifactory/Nexus? ¿con qué coordenadas y versión quedó el wheel — 1.0.1.dev0 o nomenclatura snapshot?). Dame la ruta/URL exacta de descarga. Si la pipeline no publica el wheel a repositorio y solo lo genera en el workspace del build, dime de dónde lo descargo en CloudBees.
+
+FASE 2 — Verificación de identidad.
+Antes de subir nada: compara el wheel oficial descargado con el wheel local 1.0.1.dev0 que usamos en el run validado (checksum/byte a byte, como hicimos la otra vez). Espero que sean idénticos — si difieren en algo más que metadatos de build, PARA y me lo enseñas.
+
+FASE 3 — Despliegue y limpieza previa.
+1. Comando CLI para subir el wheel oficial al volumen del lab (misma ruta que la vez anterior, perfil cash-supply-andres).
+2. jobs update parcial apuntando las libraries de las 3 tareas al wheel oficial.
+3. IMPORTANTE: el job hace append — antes de lanzar, propón cómo dejar la partición para que el run canónico no genere duplicados (¿borro las 700 filas del run anterior y el canónico escribe limpio? Prefiero eso: la evidencia final queda 100% del artefacto oficial). Sentencia exacta y espero mi ok antes de ejecutar.
+
+FASE 4 — Run y sanity exprés.
+Lanzo yo el run-now con los mismos parámetros. Después: 3 tareas SUCCESS, 700 filas, 50 oficinas, 14 fechas, 0 nulos, valores no triviales y distintos por modelo, 0 claves duplicadas. Y la línea final para la issue: "run canónico desde el artefacto de la pipeline (run <id>, wheel <versión oficial>): mismos resultados que el run validado — evidencia sin asteriscos".
