@@ -44,10 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-La policy cierra la vía de configuración: vamos al fix en código. Prepáralo SIN tocar develop — todo en una rama fix, y no hagas commit hasta mi ok:
-
-1. EL FIX (quirúrgico, en datasets.py): normaliza el join temporal a semántica DATE en ambos lados (cuadrícula y transaction_date). Elige la variante de menor huella: o generar la cuadrícula ya como date (quitar utc=True y truncar), o castear ambos lados a date justo en el join. Justifícame cuál eliges y por qué. El fillna(target=0) NO lo toques — es otro debate (H9 lo documenta, pero cambiarlo es decisión aparte).
-2. TEST DE REGRESIÓN: caso con origen DATE + sesión con timezone Europe/Madrid → con el código actual el target sale a cero, con el fix sale con valores. Que quede nombrado con referencia H9.
-3. PARIDAD: verifica que con timezone UTC el fix produce EXACTAMENTE los mismos matches y el mismo training que el código actual (55.500/55.500, mismos valores) — el fix debe ser invisible donde hoy funciona.
-4. SUITE: corre la batería completa del paquete de forecasting en local y dime el resultado (espero verde + el test nuevo).
-5. Cuando todo esté verde, dame el plan de redespliegue al lab: bump de versión del wheel, mvn package, subida del wheel al volumen, y qué hay que tocar en el job (¿basta relanzar o hay que recrear el job apuntando al wheel nuevo?). No ejecutes el despliegue: me das los pasos y lo hago yo.
+1. Commit en la rama fix/h9-date-join y deja preparado el PR a develop (título y descripción con referencia a H9: causa, fix, test de regresión, paridad verificada). No lo abras aún: primero valido el E2E en el lab.
+2. Ejecuto yo el plan de redeploy tal cual: bump, mvn clean package, subida del wheel con el CLI y jobs update de las libraries de las 3 tareas. Dame los comandos exactos listos para pegar, incluido el JSON parcial del jobs update.
+3. Tras el run-now: sanity completo + el check de duplicados que quedó pendiente (¿el nuevo run sobrescribe la partición del odate o conviven las filas a cero del run malo? — si conviven, propuesta de limpieza antes de dar nada por bueno).
+4. Con todo verde: bloque de evidencia de fase 3 para la issue, con el episodio completo: run verde con predicciones a cero → sanity lo cazó → H9 (join sensible a timezone; la policy del banco fija Europe/Madrid, así que sin fix afectaba a todos los entornos) → fix validado con regresión y paridad → E2E verde en lab.
+   Nota en la evidencia: este run usa wheel local 1.0.1.dev0 de la rama fix; cuando el PR entre por la pipeline, relanzamos una vez desde el artefacto oficial para dejar la validación canónica.
