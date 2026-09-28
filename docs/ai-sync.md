@@ -44,10 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Confirmado: la base contractual es el esquema del registry/código (los 11 campos actuales) MÁS los dos nuevos. El DDL representa el contrato OBJETIVO acordado con el equipo de modelos el 24-sep, no solo lo que el código escribe hoy. Genera los dos artefactos con esto:
+Buen trabajo. Cerramos así:
 
-1. En el .sql, añade comentario en is_feasible y coste_estimado indicando que se poblarán con un cambio de código pendiente (propagación desde el optimizador) — tarea aparte, para que el DDL sea honesto sobre su estado.
-2. Destino parametrizable y nota de CDO como propusiste. Mapas tal cual (coinciden con lo acordado, bien verificado).
-3. En la versión legible para Jira, marca los dos campos nuevos como "acordado 24-sep, pendiente de cambio de código".
+1. Commit de los dos artefactos en rama feature/create-tabla-final (el .sql en resources con la convención del install, el .md no va al repo — es para Jira) y déjame preparado el PR con descripción corta: "CREATE de la tabla final — estructura acordada con modelos el 24-sep + is_feasible y coste_estimado (pendientes de cambio de código); destino físico parametrizado, pendiente de asignación CDO".
 
-Y un TERCER entregable, solo análisis, sin tocar código: el plan del cambio mínimo para poblar los campos — (a) dónde deja main.py de eliminar is_feasible y transport_cost, (b) cómo viajan hasta el modelo experto y su escritura final, (c) el mapeo transport_cost → coste_estimado, (d) qué tests hay que ajustar o añadir (incluido el de caracterización que documenta el drop actual), y (e) tamaño estimado del diff. Lo implementaremos después en rama aparte con su propia tarea.
+2. El plan de implementación queda APROBADO pero APARCADO — no toques código todavía; lo ejecutaremos en rama aparte (feature/propagar-feasibility) cuando cierre las vistas. Solo una duda a verificar ANTES de darlo por completo: si _run_optimize_command deja de eliminar is_feasible y transport_cost, ¿cambia el esquema PERSISTIDO de la tabla intermedia de decisiones (cash_supply_optimization)? Si es así, el plan necesita un punto más: actualizar su registro/DDL y evolucionar la tabla del lab. Confírmalo y añádelo al plan si aplica.
+
+3. Dame el plan final en texto plano para pegarlo como descripción de la tarea de Jira.
