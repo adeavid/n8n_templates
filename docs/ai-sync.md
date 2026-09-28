@@ -44,10 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Necesito la estructura de la TABLA FINAL del pipeline como documento de una página para una reunión de decisión mañana. La tabla final = donde escribe run_expert_model (el output del criterio experto, lo que consume la aplicación aguas abajo).
+Confirmado: la base contractual es el esquema del registry/código (los 11 campos actuales) MÁS los dos nuevos. El DDL representa el contrato OBJETIVO acordado con el equipo de modelos el 24-sep, no solo lo que el código escribe hoy. Genera los dos artefactos con esto:
 
-1. Localiza en el código dónde escribe el expert model su resultado: nombre físico de la tabla (resuélvelo desde config/defaults — recuerda que los defaults apuntan a PRO) y modo de escritura (append/overwrite, particionado y por qué campo).
-2. Esquema completo: lista de columnas con tipo y una línea de significado por columna, deducido del código que las construye (p. ej. cantidad por denominación, fecha de decisión, identificador de oficina...).
-3. Marca: (a) qué columnas son la "decisión" que consume la aplicación vs cuáles son metadata/intermedias; (b) si hay campos que se calculan pero NO se persisten (sé que is_feasible se pierde en el entry point — confírmalo y mira si hay más casos); (c) claves de negocio: ¿qué combinación identifica una fila (oficina+fecha+denominación?)?
-4. De propina: la tabla de decisiones del optimize (la intermedia previa al experto) — solo nombre y 1 línea, para poder explicar mañana la diferencia entre ambas.
-5. Formato de salida: tabla markdown campo|tipo|significado|¿decisión o metadata?, más 3-4 líneas de notas. Es para llevarla impresa/en pantalla, no para publicar.
+1. En el .sql, añade comentario en is_feasible y coste_estimado indicando que se poblarán con un cambio de código pendiente (propagación desde el optimizador) — tarea aparte, para que el DDL sea honesto sobre su estado.
+2. Destino parametrizable y nota de CDO como propusiste. Mapas tal cual (coinciden con lo acordado, bien verificado).
+3. En la versión legible para Jira, marca los dos campos nuevos como "acordado 24-sep, pendiente de cambio de código".
+
+Y un TERCER entregable, solo análisis, sin tocar código: el plan del cambio mínimo para poblar los campos — (a) dónde deja main.py de eliminar is_feasible y transport_cost, (b) cómo viajan hasta el modelo experto y su escritura final, (c) el mapeo transport_cost → coste_estimado, (d) qué tests hay que ajustar o añadir (incluido el de caracterización que documenta el drop actual), y (e) tamaño estimado del diff. Lo implementaremos después en rama aparte con su propia tarea.
