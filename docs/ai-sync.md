@@ -44,9 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-El deploy falló por GroupName(GR_IA_LOCAL) does not exist al crear los jobs en dev — es el grupo del LAB colado en el access_control_list de las plantillas. Fix con evidencia:
-
-1. Busca en delphi-models (que despliega en dev de verdad) qué GRUPO usan sus plantillas de jobs / variables de entorno para dev — el equivalente de GR_IA_LOCAL en ese workspace. Dame el valor con su archivo de evidencia.
-2. Barrido completo: localiza TODAS las apariciones de GR_IA_LOCAL (y de cualquier otro principal/grupo específico del lab) en las plantillas y properties que usa dev-adb — no solo las dos que fallaron. Idealmente el grupo debería ser variable por entorno, no literal en la plantilla: dime si el mecanismo lo permite.
-3. YA QUE ESTÁS: arregla también el desajuste de la variable del workspace — las plantillas usan {{ HOME_WORKSPACE }} pero delphi-models define HOME_WSPACE, y nuestro global_environment_variables.json no define NINGUNA de las dos. Confirma qué nombre espera el renderizado de cloudutils y define la variable correcta con la URL de dev.
-4. Commit a la rama, PR pequeña, y me dices cuándo relanzar.
+Antes de mergear: al sustituir GR_IA_LOCAL por {{ JOB_GROUP }} en las plantillas, éstas ahora exigen que CADA entorno defina JOB_GROUP. ¿El lab-adb lo define en sus variables? Si no, añádelo con su valor actual (GR_IA_LOCAL) — que el fix de dev no deje al lab sin poder renderizar sus plantillas el día de mañana. Confírmame y mergeamos.
