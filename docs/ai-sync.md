@@ -44,10 +44,11 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Paridad completa confirmada — FASE 4, el empaquetado:
+Revisa la PR de Agustín (properties/config de dev) ANTES de mergear. Chequeos concretos:
 
-1. El projection_views.sql pasa a los resources del proyecto como recurso versionado, con catálogo y esquema PARAMETRIZADOS (${target_catalog}/${target_schema}, mismo patrón que el CREATE de la tabla final) — las vistas se crearán en cada entorno vía install apuntando a las tablas de ese entorno. Nada cableado a lab_app.
-2. Rama feature/capa-proyeccion sobre develop ACTUALIZADO (ojo: la PR de properties de Agustín toca resources — si ya está mergeada, rebasa sobre ella; si no, dime y decidimos el orden para no pisarnos).
-3. PR con descripción corta: qué es la capa (vistas que exponen el contrato antiguo sobre las tablas nuevas del equipo de datos), la evidencia de paridad (5/5 tareas ambas vías, filas/claves/métricas diff 0), y la referencia a H10 como hallazgo destapado durante la validación.
-4. Y el bloque de evidencia para la tarea de Jira, en español, listo para pegar: paridad total + una línea del episodio H10 (legacy sin festivos por resolución de partición → documentado → paridad repetida en igualdad de condiciones → diff 0).
-5. Limpieza final del lab: confirma qué tablas/recursos temporales de la validación quedan y cuáles borrar (las espejo se QUEDAN — sirven para dev y para la demo de la capa a Agustín; los jobs temporales fuera).
+1. CLAVES: compara las claves del config.yaml y properties de la PR contra las que el código LEE (los campos de las dataclasses del config loader y las claves spark que se consultan). Lista cualquier clave nueva, renombrada o eliminada, y dime si el código la lee o la ignoraría en silencio (regla H5b).
+2. VALORES de dev-adb: ¿el catálogo ya no es lab_app? ¿esquema, ruta de volumen y policy tienen formato coherente con los equivalentes de lab (mismo patrón, distinto entorno)? Marca cualquier valor que parezca placeholder o dudoso.
+3. lab-adb INTACTO: confirma que la PR no toca nada del entorno de lab.
+4. CONVIVENCIA: mi merge de la capa de proyección ya está en develop — verifica que la estructura de resources queda coherente con las dos (mi projection_views.sql + sus properties), sin duplicados ni rutas rotas.
+5. SOURCES: los nombres de tablas que ha puesto en los sources, ¿coinciden EXACTAMENTE con los que resuelve el config (los 8 de entrada + 3 de salida)? Un typo aquí = tabla no encontrada en runtime.
+6. Veredicto: mergeable tal cual, o lista de comentarios para la PR.
