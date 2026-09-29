@@ -44,18 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Arrancamos la capa de proyección (aprobada por modelos el jueves): vistas SQL que exponen el CONTRATO VIEJO sobre las tablas del contrato NUEVO, para que el código no se toque. Te adjunto los CREATEs del equipo de datos y el análisis de diferencias (renombres, tipos, calendario único). Trabaja por fases y PARA al final de cada una con la cosecha (conteos/resúmenes, nunca datos).
+Paridad completa confirmada — FASE 4, el empaquetado:
 
-FASE 1 — Tablas nuevas en el lab con datos espejo.
-Crea en lab_app.iadarq las tablas del contrato NUEVO (desde los CREATEs de Juan, con sufijo _50) y puéblalas TRANSFORMANDO las tablas sintéticas viejas existentes con el mapeo inverso (idcent→branch_id, daily_net_cashflow→daily_customer_cashflow, tipos casteados, los 3 calendarios fundidos en calendar_datagen con sus flags y zip_code, etc.). Así el CONTENIDO es idéntico y solo cambia la forma — condición para la paridad de la fase 3. Cosecha: conteos por tabla nueva vs vieja (deben cuadrar).
-
-FASE 2 — Las vistas.
-Escribe las vistas que reconstruyen el contrato viejo sobre las tablas nuevas: renombres con AS, CASTs de tipos, y los 3 calendarios lógicos derivados de calendar_datagen con filtros. Como archivo SQL en los resources del proyecto (el mecanismo del install), no ejecutado a mano suelta. Enséñame el SQL completo antes de crearlas.
-
-FASE 3 — Paridad.
-Corre el pipeline completo (forecast → optimize → experto) leyendo DE LAS VISTAS, y compara la salida contra la ejecución de referencia sobre las tablas viejas: mismas filas, mismos valores, diff = 0. Es el mismo listón de paridad de siempre.
-
-FASE 4 — Empaquetado.
-Integra el SQL de vistas en los resources por entorno + nota de documentación + PR en feature/capa-proyeccion.
-
-CASO A DOCUMENTAR (no resolver ahora): las tablas reales solo tienen filas de días laborables y las sintéticas viejas tienen todos los días — la vista no puede inventar fines de semana. Déjalo escrito como diferencia conocida a validar con las particiones reales de integración.
+1. El projection_views.sql pasa a los resources del proyecto como recurso versionado, con catálogo y esquema PARAMETRIZADOS (${target_catalog}/${target_schema}, mismo patrón que el CREATE de la tabla final) — las vistas se crearán en cada entorno vía install apuntando a las tablas de ese entorno. Nada cableado a lab_app.
+2. Rama feature/capa-proyeccion sobre develop ACTUALIZADO (ojo: la PR de properties de Agustín toca resources — si ya está mergeada, rebasa sobre ella; si no, dime y decidimos el orden para no pisarnos).
+3. PR con descripción corta: qué es la capa (vistas que exponen el contrato antiguo sobre las tablas nuevas del equipo de datos), la evidencia de paridad (5/5 tareas ambas vías, filas/claves/métricas diff 0), y la referencia a H10 como hallazgo destapado durante la validación.
+4. Y el bloque de evidencia para la tarea de Jira, en español, listo para pegar: paridad total + una línea del episodio H10 (legacy sin festivos por resolución de partición → documentado → paridad repetida en igualdad de condiciones → diff 0).
+5. Limpieza final del lab: confirma qué tablas/recursos temporales de la validación quedan y cuáles borrar (las espejo se QUEDAN — sirven para dev y para la demo de la capa a Agustín; los jobs temporales fuera).
