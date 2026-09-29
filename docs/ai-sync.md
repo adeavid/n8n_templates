@@ -44,4 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Antes de mergear: al sustituir GR_IA_LOCAL por {{ JOB_GROUP }} en las plantillas, éstas ahora exigen que CADA entorno defina JOB_GROUP. ¿El lab-adb lo define en sus variables? Si no, añádelo con su valor actual (GR_IA_LOCAL) — que el fix de dev no deje al lab sin poder renderizar sus plantillas el día de mañana. Confírmame y mergeamos.
+Antes de escalar, una verificación: el UUID del path (54edd94b-...) lo añadimos hoy como HOME_WSPACE copiado de delphi-models. 
+1. ¿A qué identidad corresponde ese UUID — es el home de NUESTRO service principal (sani3glbsp4delphiauth001-sp401) o el de la identidad que usa delphi-models?
+2. ¿Delphi-models ejecuta sus jobs en dev con ESTE MISMO sp401 o con otro principal?
+3. Si el UUID no es de nuestro SP: el fix es nuestro — HOME_WSPACE debe ser el home de nuestro principal (o una ruta compartida con grants). ¿Podemos deducir el home correcto de sp401?
+Si el UUID SÍ es coherente con nuestro SP y la ruta existe: entonces es puro permiso (CAN_READ/CAN_RUN) y escalamos con tu texto.
