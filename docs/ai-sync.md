@@ -44,20 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Objetivo: dejar HOY el despliegue a dev listo. La PR #14 de Agustín no es mergeable (tus 5 findings), así que la sustituimos por una rama mía con lo bueno de la suya, corregido. La PR #14 no la toques — quedará superada y se cierra con un comentario al final.
-
-PASO 1 — Rama limpia con lo aprovechable:
-Crea fix/dev-properties desde develop (actualizado, con mi capa de proyección dentro). Trae de la PR #14 SOLO la estructura de properties/config de dev. Explícitamente FUERA: cualquier cambio en lab-adb (lab queda intacto, restaurando lo que su PR tocaba) y cualquier borrado de módulos legacy de cooking_depto (eso será tarea aparte con la suite corriendo).
-
-PASO 2 — Correcciones sobre esa base:
-a) source8 duplicado: contrato de claves explícito — cada tabla su clave (denominations y security_stock separadas, source9 si hace falta), en dev Y verificando que el patrón queda coherente.
-b) Documenta en un comentario del archivo la correspondencia sources ↔ lo que resuelve DataModelConfig (tu finding 5), para que no convivan dos contratos sin explicar.
-
-PASO 3 — LOS VALORES REALES DE DEV (la clave, con evidencia):
-La PR trae valores contradictorios (dev_app.delphi vs pre_app.iadarq vs restos de lab). Para resolverlo SIN adivinar: abre el repo de delphi-models — está desplegado en dev/int de verdad — y localiza sus resources/properties del entorno de dev. Extrae de ahí: catálogo, esquema, patrón de ruta de volumen y policy de dev. Contrasta contra los candidatos de la PR y dime cuál gana CON LA EVIDENCIA (archivo de delphi-models donde lo has visto). PARA AQUÍ y enséñame la tabla de valores propuestos antes de fijarlos — los confirmo yo (y se los paso a Agustín en paralelo).
-
-PASO 4 — Tras mi ok a los valores:
-environment correcto en el config de dev (nada de lab-adb), volumen y policy de dev, build local (mvn package) + suite completa. Espero todo verde — si algo rompe, para y me lo enseñas.
-
-PASO 5 — Cierre:
-PR de fix/dev-properties a develop con descripción corta ("properties de dev — basada en la #14 de Agustín, con source8 corregido, lab intacto y valores contrastados con delphi-models; la limpieza de cooking_depto se separa a su propia tarea"). Y el comentario para cerrar la #14 agradeciendo y enlazando la nueva.
+PASO 3-bis — Antes de fijar el environment del config de dev, VERIFICA la cadena de resolución con evidencia: ¿quién lee la clave `environment:` del config.yaml (¿la lee alguien, o es informativa?), qué parámetro `environment` pasan las plantillas de jobs, y cómo elige la pipeline/install la carpeta de resources según el targetEnvironment del Build with Parameters? Con esa cadena clara, dime qué valor exacto debe llevar cada pieza en dev — con archivo:línea de dónde se lee cada una.
