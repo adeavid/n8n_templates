@@ -44,12 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Antes del merge, la verificación que quedó pendiente: el cruce arqueos/denominations.
+El deploy falló por GroupName(GR_IA_LOCAL) does not exist al crear los jobs en dev — es el grupo del LAB colado en el access_control_list de las plantillas. Fix con evidencia:
 
-1. ¿Qué clave del config resuelve la tabla DENOMINATIONS (la de distribución por oficina) y qué clave resuelve la de ARQUEOS (sanes_arqueos, la que lee el modelo experto)? Archivo:línea de dónde se lee cada una en DataModelConfig y dónde se consume cada tabla en el código.
-
-2. Dijiste que sanes_arqueos la resuelve DataModelConfig.denominations_table_name — confírmalo o corrígelo. Si es así: ¿existe entonces OTRA clave para la tabla denominations del optimizador, o una sola clave sirve para los dos conceptos?
-
-3. Según la respuesta: ¿el contrato de sources de la PR asigna cada tabla a la clave correcta? Si hay una clave con nombre engañoso (denominations_table_name apuntando a arqueos), NO la renombres — solo documéntalo en el comentario del contrato y dímelo: va a la lista de deuda (familia H5/H8).
-
-Cosecha corta: tabla clave→tabla física→consumidor, y veredicto de si la PR queda bien tal cual o hay que retocar una asignación.
+1. Busca en delphi-models (que despliega en dev de verdad) qué GRUPO usan sus plantillas de jobs / variables de entorno para dev — el equivalente de GR_IA_LOCAL en ese workspace. Dame el valor con su archivo de evidencia.
+2. Barrido completo: localiza TODAS las apariciones de GR_IA_LOCAL (y de cualquier otro principal/grupo específico del lab) en las plantillas y properties que usa dev-adb — no solo las dos que fallaron. Idealmente el grupo debería ser variable por entorno, no literal en la plantilla: dime si el mecanismo lo permite.
+3. YA QUE ESTÁS: arregla también el desajuste de la variable del workspace — las plantillas usan {{ HOME_WORKSPACE }} pero delphi-models define HOME_WSPACE, y nuestro global_environment_variables.json no define NINGUNA de las dos. Confirma qué nombre espera el renderizado de cloudutils y define la variable correcta con la URL de dev.
+4. Commit a la rama, PR pequeña, y me dices cuándo relanzar.
