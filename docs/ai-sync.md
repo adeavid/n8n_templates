@@ -44,8 +44,12 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Aprobada la tabla de valores — la evidencia de delphi-models manda: pre_app.delphi, volumen /Volumes/pre_app/delphi/vol_sfw, policy 0002692022240CA0, ENV dev-adb, y corrige el default de run.sh a dev-adb. 
+Antes del merge, la verificación que quedó pendiente: el cruce arqueos/denominations.
 
-ANTES de aplicar, una verificación: dices que sanes_arqueos la resuelve DataModelConfig.denominations_table_name — ¿no hay un cruce ahí? En el lab existen DOS tablas distintas: denominations (distribución por oficina) y la de arqueos. Confírmame con archivo:línea qué clave del config resuelve CADA una y que el contrato de sources no las mezcla. Si resulta que una sola clave sirve para los dos conceptos, no lo asumas como correcto: dímelo — sería deuda a documentar (familia H5/H8, nombre de clave engañoso).
+1. ¿Qué clave del config resuelve la tabla DENOMINATIONS (la de distribución por oficina) y qué clave resuelve la de ARQUEOS (sanes_arqueos, la que lee el modelo experto)? Archivo:línea de dónde se lee cada una en DataModelConfig y dónde se consume cada tabla en el código.
 
-Con eso aclarado: aplica los valores, mvn package + suite completa, y si todo verde, PR a develop con la descripción acordada ("properties de dev basada en la #14, source8 corregido + arqueos añadida, lab intacto, valores contrastados con delphi-models").
+2. Dijiste que sanes_arqueos la resuelve DataModelConfig.denominations_table_name — confírmalo o corrígelo. Si es así: ¿existe entonces OTRA clave para la tabla denominations del optimizador, o una sola clave sirve para los dos conceptos?
+
+3. Según la respuesta: ¿el contrato de sources de la PR asigna cada tabla a la clave correcta? Si hay una clave con nombre engañoso (denominations_table_name apuntando a arqueos), NO la renombres — solo documéntalo en el comentario del contrato y dímelo: va a la lista de deuda (familia H5/H8).
+
+Cosecha corta: tabla clave→tabla física→consumidor, y veredicto de si la PR queda bien tal cual o hay que retocar una asignación.
