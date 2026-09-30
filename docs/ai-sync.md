@@ -44,7 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Última pasada antes de aprobar la #21:
-1. INVENTARIO de los 17 archivos: lista con una línea por archivo (qué es y por qué está).
-2. La evidencia del MAPEO del nombre de carpeta: ¿dónde está demostrado que la pipeline/install, con targetEnvironment=INT, busca exactamente "integration-adb"? Archivo:línea del mapeo (Jenkinsfile/install/run-env). "Documentado" no me vale — quiero ver quién lo lee.
-3. Los dos pendientes quedan como PLACEHOLDERS marcados: el FQN de branch como provisional (ya preguntado a Marcos) y el home del SP (preguntado a Agustín). En cuanto lleguen las respuestas, se fijan y mergeamos.
+Limpieza de la #21 antes del merge:
+
+1. NOMBRES PROPIOS FUERA de todos los archivos: sustituye "[Marcos]" y "[Agustín]" por etiquetas neutras ("pendiente de confirmación — equipo de datos" / "— plataforma"). El seguimiento de quién confirma qué va en la descripción de la PR, no en el repo.
+2. EL PLACEHOLDER DE cash_movements.properties:23: la clave NUNCA puede tener un placeholder como valor — deja el FQN provisional extrapolado como valor y el aviso como COMENTARIO (# TODO: confirmar FQN con equipo de datos). Verifica que ninguna otra clave de properties tenga texto no-valor.
+3. CONSOLIDA los 8 .md de evidencia en UN solo archivo (int-adb evidencia: tabla valor | fuente | estado), y borra los sueltos.
+4. Y el mapeo INT→carpeta, la evidencia que nos falta SÍ existe sin esperar a un run de Jenkins: ¿QUÉ NOMBRE de carpeta usa delphi-models para su entorno de int? Si su patrón es dev-adb→int-adb y nuestra carpeta se llama integration-adb, tenemos un problema de nombre ANTES de desplegar. Míralo en su repo y dime qué encuentras.
