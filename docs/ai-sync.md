@@ -44,9 +44,12 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Tarea de linaje para la petición de publicación de la tabla final. Para cada uno de los 13 campos, documenta su ORIGEN de datos:
-- De qué tabla(s) de entrada sale (de las 8: branch_360/vistas, calendarios, availability, denominations, security_stock, arqueos) — o si es calculado.
-- Tipo: lectura DIRECTA / TRANSFORMACIÓN (di cuál: agregación, derivación del plan del optimizador, desglose por centiles...) / FILTRADO.
-- Evidencia archivo:línea de donde se construye cada campo.
-Formato: tabla campo | origen(es) | tipo | descripción en una frase | evidencia. Los dos campos nuevos (is_feasible, coste_estimado) márcalos como "pendiente de cambio de código" con su origen previsto (el optimizador).
-Es para el trámite de CDO — lenguaje claro, que lo lee gente de gobierno de datos, no ingenieros.
+Última ronda para sacar la #21 de Draft — tres verificaciones y cierre:
+
+1. NOMBRE DE CARPETA (evidencia operativa): mira en el repo de delphi-models cómo se llama SU carpeta de resources del entorno de integración (su patrón de dev es dev-adb). Si su carpeta es "int-adb" (o cualquier cosa distinta de "integration-adb"), RENOMBRA nuestra carpeta y todas sus referencias (run-env.sh, evidencia) al nombre que usa delphi-models — la librería de pipeline es la misma y espera lo mismo. Si la suya también es "integration-adb", perfecto, documéntalo en evidence.md y seguimos.
+
+2. FQN DE branch_cash_servicing (te adjunto los CREATEs del equipo de datos): revisa si el CREATE de branch_cash_servicing declara catálogo/esquema destino. Si coincide con pro_business_estructurales.cdl_modelos → el valor pasa de provisional a EVIDENCIADO (actualiza el comentario y evidence.md). Si declara otro esquema → corrige el FQN al del CREATE. Si el CREATE no lo declara → se queda como provisional con su # TODO, que ya está bien puesto.
+
+3. HOME_WSPACE DE INT (deducción por identidad): ¿la pipeline usa las MISMAS credenciales/service principal para desplegar dev e int, o hay un principal por entorno? Míralo en el Jenkinsfile/configuración de credenciales. Si es el mismo sp401 → su application-id (y por tanto su home /Users/<uuid>) es el mismo que fijamos ayer para dev: aplica ese valor y documenta la deducción. Si hay un principal distinto por entorno → deja el mejor valor hipotético con # TODO y me lo dices: desplegaremos aceptando un posible rojo de firma conocida.
+
+4. Con las tres cerradas: actualiza evidence.md con el estado final de cada valor (evidenciado / deducido / provisional), saca la PR de Draft y confírmame que queda lista para merge. El merge lo doy yo.
