@@ -44,12 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Última ronda para sacar la #21 de Draft — tres verificaciones y cierre:
-
-1. NOMBRE DE CARPETA (evidencia operativa): mira en el repo de delphi-models cómo se llama SU carpeta de resources del entorno de integración (su patrón de dev es dev-adb). Si su carpeta es "int-adb" (o cualquier cosa distinta de "integration-adb"), RENOMBRA nuestra carpeta y todas sus referencias (run-env.sh, evidencia) al nombre que usa delphi-models — la librería de pipeline es la misma y espera lo mismo. Si la suya también es "integration-adb", perfecto, documéntalo en evidence.md y seguimos.
-
-2. FQN DE branch_cash_servicing (te adjunto los CREATEs del equipo de datos): revisa si el CREATE de branch_cash_servicing declara catálogo/esquema destino. Si coincide con pro_business_estructurales.cdl_modelos → el valor pasa de provisional a EVIDENCIADO (actualiza el comentario y evidence.md). Si declara otro esquema → corrige el FQN al del CREATE. Si el CREATE no lo declara → se queda como provisional con su # TODO, que ya está bien puesto.
-
-3. HOME_WSPACE DE INT (deducción por identidad): ¿la pipeline usa las MISMAS credenciales/service principal para desplegar dev e int, o hay un principal por entorno? Míralo en el Jenkinsfile/configuración de credenciales. Si es el mismo sp401 → su application-id (y por tanto su home /Users/<uuid>) es el mismo que fijamos ayer para dev: aplica ese valor y documenta la deducción. Si hay un principal distinto por entorno → deja el mejor valor hipotético con # TODO y me lo dices: desplegaremos aceptando un posible rojo de firma conocida.
-
-4. Con las tres cerradas: actualiza evidence.md con el estado final de cada valor (evidenciado / deducido / provisional), saca la PR de Draft y confírmame que queda lista para merge. El merge lo doy yo.
+Ajuste para audiencia CDO: añade una columna (o traduce la de orígenes) con el ORIGEN OFICIAL de producción de cada fuente interna: branch_360 → vista sobre pro_business_estructurales.cdl_modelos.branch_cash_servicing; calend_oficina/lab_nac/lab_loc → vistas derivadas de calendar_datagen (filtros de flags); sanes_arqueos y cash_supply_optimization con sus FQN. Y una nota de cabecera: "el proceso consume los orígenes oficiales a través de una capa de vistas de compatibilidad". Las tablas internas se mantienen como referencia técnica, pero el linaje ante CDO se lee contra los orígenes oficiales.
