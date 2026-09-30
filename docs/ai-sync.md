@@ -44,4 +44,12 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Ajuste para audiencia CDO: añade una columna (o traduce la de orígenes) con el ORIGEN OFICIAL de producción de cada fuente interna: branch_360 → vista sobre pro_business_estructurales.cdl_modelos.branch_cash_servicing; calend_oficina/lab_nac/lab_loc → vistas derivadas de calendar_datagen (filtros de flags); sanes_arqueos y cash_supply_optimization con sus FQN. Y una nota de cabecera: "el proceso consume los orígenes oficiales a través de una capa de vistas de compatibilidad". Las tablas internas se mantienen como referencia técnica, pero el linaje ante CDO se lee contra los orígenes oficiales.
+Rename de la tabla final: fuera el sufijo _u (regla del banco: _u es exclusivo de tablas publicadas por analistas — confirmado por plataforma y modelos). Nombre nuevo: sanes_modelo_predictivo. Alcance:
+
+1. EL DDL del repo (el CREATE en resources): renombra la tabla a sanes_modelo_predictivo. Actualiza también el comentario de cabecera (nota de CDO/casita) si menciona el nombre viejo.
+2. REFERENCIAS — barrido completo del nombre viejo en el repo y clasifica cada aparición:
+   - Properties/config por entorno (el VALOR de cash_denominations_service_table_name): en dev-adb e integration-adb → nombre NUEVO (allí la tabla aún no existe, empezamos limpios). En lab-adb → DÉJALO como está (_u): la tabla del lab ya existe con ese nombre y funciona; renombrarla es churn sin beneficio — anótalo como divergencia documentada del lab.
+   - El DEFAULT del código (que apunta a la paramétrica _u de pro): NO LO TOQUES — la paramétrica real sigue llamándose así y ese default es tema aparte (H5).
+   - Docs: el .md del esquema en Jira, evidence.md y el doc de linaje → nombre nuevo con una línea de nota ("renombrada desde _u por convención de zona gobernada").
+3. CLAVES: ninguna clave de config se renombra — solo valores. (Regla de siempre.)
+4. PR pequeña con título claro ("Rename tabla final sin sufijo _u — convención de publicación") y me dices cuándo mergear.
