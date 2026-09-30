@@ -44,8 +44,13 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Antes de escalar, una verificación: el UUID del path (54edd94b-...) lo añadimos hoy como HOME_WSPACE copiado de delphi-models. 
-1. ¿A qué identidad corresponde ese UUID — es el home de NUESTRO service principal (sani3glbsp4delphiauth001-sp401) o el de la identidad que usa delphi-models?
-2. ¿Delphi-models ejecuta sus jobs en dev con ESTE MISMO sp401 o con otro principal?
-3. Si el UUID no es de nuestro SP: el fix es nuestro — HOME_WSPACE debe ser el home de nuestro principal (o una ruta compartida con grants). ¿Podemos deducir el home correcto de sp401?
-Si el UUID SÍ es coherente con nuestro SP y la ruta existe: entonces es puro permiso (CAN_READ/CAN_RUN) y escalamos con tu texto.
+Antes de mergear la #21, revisión con evidencia:
+
+1. BASE: la PR está contra fix/dev-properties, que ya está en develop. Cámbiale la base a develop y confirma que el diff sigue siendo solo la carpeta nueva de int (sin arrastrar nada raro).
+2. NOMBRE DE CARPETA: ¿qué nombre de carpeta de resources espera la pipeline/install cuando el targetEnvironment es INT? Evidencia: cómo mapea el Jenkinsfile/install.sh el parámetro a la carpeta, y qué nombre usa delphi-models para su entorno de int. Si lo esperado es "int-adb" y creaste "integration-adb" (o viceversa), corrígelo al que la evidencia diga.
+3. MINERVA: aparece "minerva" en la PR — ¿qué es y de dónde sale? Archivo:línea. ¿Es algo del entorno int real (evidenciado en delphi-models) o un arrastre de sus plantillas que no nos aplica?
+4. CORREOS: hay direcciones de correo en la PR — ¿de quién son y dónde están (¿email_notifications de los jobs?)? Si son del equipo de delphi-models, sustitúyelas por las nuestras o déjalas vacías — que sus buzones no reciban las alertas de nuestros jobs.
+5. HOME_WSPACE de int: el UUID que has puesto — ¿corresponde al home de NUESTRO service principal EN INT? Que no repitamos lo de ayer (el home copiado de otra identidad).
+6. FQN de branch_cash_servicing en pro: dijiste pro_business_estructurales.cdl_modelos para ambas fuentes — ¿el de branch_cash_servicing está EVIDENCIADO en algún sitio o es extrapolación del calendar_datagen? Si es extrapolación, márcalo como "a confirmar con el equipo de datos".
+7. Checklist de siempre: claves sin renombrar, dev-adb y lab-adb intactos, contrato de sources completo.
+Veredicto y luego decido merge.
