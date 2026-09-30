@@ -44,9 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Limpieza de la #21 antes del merge:
-
-1. NOMBRES PROPIOS FUERA de todos los archivos: sustituye "[Marcos]" y "[Agustín]" por etiquetas neutras ("pendiente de confirmación — equipo de datos" / "— plataforma"). El seguimiento de quién confirma qué va en la descripción de la PR, no en el repo.
-2. EL PLACEHOLDER DE cash_movements.properties:23: la clave NUNCA puede tener un placeholder como valor — deja el FQN provisional extrapolado como valor y el aviso como COMENTARIO (# TODO: confirmar FQN con equipo de datos). Verifica que ninguna otra clave de properties tenga texto no-valor.
-3. CONSOLIDA los 8 .md de evidencia en UN solo archivo (int-adb evidencia: tabla valor | fuente | estado), y borra los sueltos.
-4. Y el mapeo INT→carpeta, la evidencia que nos falta SÍ existe sin esperar a un run de Jenkins: ¿QUÉ NOMBRE de carpeta usa delphi-models para su entorno de int? Si su patrón es dev-adb→int-adb y nuestra carpeta se llama integration-adb, tenemos un problema de nombre ANTES de desplegar. Míralo en su repo y dime qué encuentras.
+Tarea de linaje para la petición de publicación de la tabla final. Para cada uno de los 13 campos, documenta su ORIGEN de datos:
+- De qué tabla(s) de entrada sale (de las 8: branch_360/vistas, calendarios, availability, denominations, security_stock, arqueos) — o si es calculado.
+- Tipo: lectura DIRECTA / TRANSFORMACIÓN (di cuál: agregación, derivación del plan del optimizador, desglose por centiles...) / FILTRADO.
+- Evidencia archivo:línea de donde se construye cada campo.
+Formato: tabla campo | origen(es) | tipo | descripción en una frase | evidencia. Los dos campos nuevos (is_feasible, coste_estimado) márcalos como "pendiente de cambio de código" con su origen previsto (el optimizador).
+Es para el trámite de CDO — lenguaje claro, que lo lee gente de gobierno de datos, no ingenieros.
