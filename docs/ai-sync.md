@@ -44,8 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Hipótesis a probar YA: el esquema de NUESTRA app puede ser pre_app.delphi_ho, no pre_app.delphi (el grupo de jobs es gr_san_azr_apl_delphi_ho_pre y el cluster es delphi_ho). Tres pasos:
-
-1. TEST de permisos (inofensivo): en el workspace de dev, intenta CREATE TABLE pre_app.delphi_ho.__perm_test (x INT) y si funciona, DROP inmediato. También SHOW GRANTS ON SCHEMA pre_app.delphi_ho vs pre_app.delphi si se puede.
-2. EVIDENCIA DE IDENTIDAD: ¿dónde más aparece delphi_ho — en la policy, el volumen, las variables de delphi-models o del arquetipo? ¿Hay señales de que delphi_ho es la zona de NUESTRA familia de aplicaciones y "delphi" la de delphi-models? Quiero saber cuál es canónicamente el nuestro.
-3. VEREDICTO: (a) si delphi_ho es escribible Y es el nuestro → actualizamos el valor de esquema en las properties de dev (PR de una línea), sembramos ahí, y NO se pide ningún grant; (b) si delphi_ho también deniega o la evidencia dice que no es el nuestro → volvemos al grant sobre delphi, ya con la información completa ("probé ambos").
+Antes de las fases 2-3, coherencia de esquema: la siembra está en pre_app.delphi_ho pero la config DESPLEGADA apunta a pre_app.delphi — los jobs no encontrarán las tablas. Plan:
+1. Actualiza en dev-adb (properties + config.yaml) TODAS las referencias de fuentes y sink del E2E a pre_app.delphi_ho, como cambio DELIBERADO y documentado ("delphi_ho = esquema escribible de nuestra app; canónico pendiente de confirmación de plataforma"), en una rama corta.
+2. Merge + redespliegue de DEV (ya sabemos que son 40-60 min).
+3. Confirma también: ¿el cambio que hiciste en config.yaml durante la siembra quedó solo en local/workspace o tocó la rama? Que no se cuele nada sin commit deliberado.
+4. Con dev verde: fases 2-3 del E2E (los runs, con los parámetros que me ibas a proponer — odate al final del histórico sembrado, 2025-12-31).
+Si Agustín confirma entre medias que delphi_ho es el canónico, el mismo cambio aplica a integration-adb en la siguiente PR.
