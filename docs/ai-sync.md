@@ -44,4 +44,26 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-OK a la Fase 2 con UNA modificación al punto 6: estricto a medias. El job PROJECTION_VIEWS_SQL en sí es ESTRICTO (si faltan las tablas base, falla con mensaje claro "vistas no creadas: faltan fuentes X, Y" — nada de silencio), PERO su fallo NO invalida el install: install.sh lo lanza como paso no-bloqueante y reporta el resultado. Razón: las tablas base de dev/int no existen todavía (dependen del equipo de datos) y el despliegue de SOFTWARE no debe depender de tablas de DATOS. Deja un TODO documentado: endurecer a bloqueante cuando las bases existan en todos los entornos. Adelante con todo lo demás tal como lo propones.
+E2E DE VOLUMEN REAL EN DEV — el pack completo, por fases con parada al final de cada una. Cosecha siempre: conteos, tiempos, errores — nunca filas de datos.
+
+FASE 1 — SIEMBRA (puede arrancar ya, en paralelo al despliegue):
+Genera en pre_app.delphi el juego sintético de volumen real: 2.000 oficinas × histórico desde 2022-01-01 (~4 años). Reglas aprendidas (no negociables):
+- ~10% de oficinas canario (fuera de banda en ambas direcciones) + festivos DENTRO de la ventana del horizonte.
+- Denominaciones que SUMAN el balance; disponibilidad por fecha (no repetida del día 0).
+- CALENDARIOS CON UNA PARTICIÓN ANTERIOR adicional (lección H10 — sin esto los festivos salen a cero en silencio).
+- Nombres de tablas: los que esperan las properties de dev (contrato viejo — el proceso lee eso; las espejo del contrato nuevo NO hacen falta para esta prueba).
+COSECHA 1: tabla de conteos por tabla sembrada (filas, oficinas, rango de fechas, particiones), % canarios, verificación denominaciones-balance (gap %), y confirmación de la partición anterior del calendario. PARA.
+
+FASE 2 — PRECONDICIONES DE RUN (tras el verde del despliegue de dev):
+Confirma: jobs actualizados por el install (IDs y nombres), wheel nuevo en el volumen, y el estado del job de vistas (se espera fallo controlado "faltan fuentes" — anótalo tal cual). Propón los parámetros de los runs: odate con ~4 años por detrás (p.ej. el último día del histórico), environment dev-adb, horizonte 14. PARA y me enseñas los parámetros antes de lanzar.
+
+FASE 3 — EJECUCIÓN (tras mi ok):
+Lanza en orden: forecasting (las 3 tareas) → optimize → expert. Si algo sale rojo, PARA en ese punto con el error exacto.
+COSECHA 3 por etapa: estado, duración, y comparación contra mis tiempos de agosto (referencia: 2.000 oficinas ≈ 22 min total con 1 worker; statsforecast ~12-13 min; optimize ~5-6 min con params de producción). Desviación >50% en cualquier etapa = señálala.
+
+FASE 4 — SANITY COMPLETO:
+1. Predicciones: 2.000 oficinas × 14 días = 28.000 filas; 0 nulos; valores no triviales y DISTINTOS entre los 3 modelos; festivos presentes en la ventana (¡que H10 no reaparezca!).
+2. Decisiones: 2.000 filas; los CANARIOS ACTÚAN (retiradas/pedidos en las fuera-de-banda — nada de "todo en calma"); % is_feasible y distribución de acciones.
+3. Tabla final: escrita con el NOMBRE NUEVO (sanes_modelo_predictivo, sin _u — verifica que el rename desplegado se aplicó); una fila por oficina; mapas de denominaciones poblados y coherentes (suma del mapa = total).
+4. Cero claves duplicadas en las tres salidas.
+COSECHA 4: todo en formato esperado-vs-obtenido con ✓/✗, más el bloque de evidencia en español listo para la issue de Jira: "prueba de volumen real en dev — software validado con 4 años × 2.000 oficinas, tiempos en línea con el baseline de agosto".
