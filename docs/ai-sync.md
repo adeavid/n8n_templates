@@ -44,7 +44,12 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Sobre source1/source2: el "contrato original de pre_app.delphi" no es autoridad — es nuestro propio properties de hace tres días, escrito con la misma suposición (esquema de delphi-models) que acabamos de refutar. La pregunta es empírica: esas tablas no existen aún y quien las cree (Marcos con sus ficheros, o yo) solo puede hacerlo en delphi_ho — en delphi nadie de nuestro lado puede escribir. Por tanto:
-1. Cambia source1 y source2 de dev a pre_app.delphi_ho.* en la misma rama de coherencia, documentado ("ubicación determinada por escribibilidad; pendiente ratificación de plataforma sobre esquema canónico de la app").
-2. Verificación barata ya que tenemos SELECT sobre delphi: ¿existe algo en pre_app.delphi.branch_cash_servicing o calendar_datagen? (Espero que no — pero si Marcos llegó a crearlas allí con otros permisos, cambia la conversación y me lo dices.)
-Las fuentes de INT (gobernada) no se tocan.
+Alto — antes de pedir BROWSE a plataforma, tres verificaciones:
+
+1. EL ORIGEN DEL USE: ¿qué notebook/línea exacta ejecuta `USE pre_app.delphi_ho`? ¿Está en código NUESTRO de esta semana (el notebook de vistas convertido, el de integration testing tocado por la coherencia)? Dame el diff: ¿ese USE existía en el despliegue anterior de dev — el que dio VERDE con el test de integración incluido y SIN permiso BROWSE? Si el USE es nuevo nuestro, el permiso "faltante" lo hemos fabricado nosotros hoy.
+
+2. EL PERÍMETRO REAL: lista TODOS los sitios del repo que ejecutan USE (catalog/schema). ¿Son 1-2 notebooks nuestros o de verdad "notebooks, tests y aplicaciones"? Con números, no con adjetivos.
+
+3. EL FIX SIN PERMISOS: en los notebooks nuestros, sustituye el USE por NOMBRES TOTALMENTE CUALIFICADOS (catalog.schema.tabla vía los widgets que ya tienen) — es el estilo más robusto de todas formas (un notebook que depende de USE es frágil ante el contexto). Si el perímetro del punto 2 confirma que es nuestro y pequeño: aplica el cambio en la rama, mvn validate, y me dices para mergear y relanzar SIN pedir nada a nadie.
+
+Si el punto 1 demostrara que el USE ya estaba y antes funcionaba — entonces algo más cambió (¿identidad del cluster? ¿warehouse vs job?) y quiero ESE diagnóstico antes de aceptar que el permiso es la causa.
