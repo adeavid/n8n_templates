@@ -44,9 +44,7 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Antes de las fases 2-3, coherencia de esquema: la siembra está en pre_app.delphi_ho pero la config DESPLEGADA apunta a pre_app.delphi — los jobs no encontrarán las tablas. Plan:
-1. Actualiza en dev-adb (properties + config.yaml) TODAS las referencias de fuentes y sink del E2E a pre_app.delphi_ho, como cambio DELIBERADO y documentado ("delphi_ho = esquema escribible de nuestra app; canónico pendiente de confirmación de plataforma"), en una rama corta.
-2. Merge + redespliegue de DEV (ya sabemos que son 40-60 min).
-3. Confirma también: ¿el cambio que hiciste en config.yaml durante la siembra quedó solo en local/workspace o tocó la rama? Que no se cuele nada sin commit deliberado.
-4. Con dev verde: fases 2-3 del E2E (los runs, con los parámetros que me ibas a proponer — odate al final del histórico sembrado, 2025-12-31).
-Si Agustín confirma entre medias que delphi_ho es el canónico, el mismo cambio aplica a integration-adb en la siguiente PR.
+Sobre source1/source2: el "contrato original de pre_app.delphi" no es autoridad — es nuestro propio properties de hace tres días, escrito con la misma suposición (esquema de delphi-models) que acabamos de refutar. La pregunta es empírica: esas tablas no existen aún y quien las cree (Marcos con sus ficheros, o yo) solo puede hacerlo en delphi_ho — en delphi nadie de nuestro lado puede escribir. Por tanto:
+1. Cambia source1 y source2 de dev a pre_app.delphi_ho.* en la misma rama de coherencia, documentado ("ubicación determinada por escribibilidad; pendiente ratificación de plataforma sobre esquema canónico de la app").
+2. Verificación barata ya que tenemos SELECT sobre delphi: ¿existe algo en pre_app.delphi.branch_cash_servicing o calendar_datagen? (Espero que no — pero si Marcos llegó a crearlas allí con otros permisos, cambia la conversación y me lo dices.)
+Las fuentes de INT (gobernada) no se tocan.
