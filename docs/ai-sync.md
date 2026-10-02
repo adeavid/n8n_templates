@@ -44,19 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-CONTEXTO (sesión nueva — resumen del estado): Proyecto cash-movements (gestión de efectivo), entorno DEV de Databricks desplegado en verde vía CloudBees. Doctrina de zonas establecida: pre_app.delphi = zona de EJECUCIÓN (los jobs corren con el service principal y operan ahí) · pre_app.delphi_ho = sandbox humano (no lo usa el proyecto). El runtime de dev está alineado a pre_app.delphi (rama fix/dev-delphi-runtime-volume-seed, ya mergeada y desplegada). Existe un job de siembra e2e_volume_seed (identidad SP) que genera el juego sintético de volumen real: 2.000 oficinas × 4 años (2022-01-01..2025-12-31), ~2,9M filas, con canarios (~10%), denominaciones que suman el balance, y calendarios CON partición anterior (lección H10: sin partición previa, los festivos salen a cero en silencio). El job de vistas PROJECTION_VIEWS_SQL falla controlado en dev (fuentes del contrato nuevo no existen aquí — se validará en INT contra zona gobernada); es esperado y no bloquea. Referencias de rendimiento (benchmark agosto, 2.000 oficinas, 1 worker): total ≈ 22 min · statsforecast ≈ 12-13 min · optimize ≈ 5-6 min con params de producción (pop60/maxiter7500/retries10).
+El bloqueo de la Fase B revela la pieza que falta: los jobs del PROCESO no están templatizados en resources (en el lab se crearon a mano) — por eso no hay nada que lanzar en dev y intentaste un job temporal. La solución es la tarea ya acordada con plataforma: EL JOB ÚNICO MULTI-TASK. Hazlo ahora:
 
-TAREA — completar el E2E de volumen en DEV:
-
-FASE A — SIEMBRA: lanza el job e2e_volume_seed (Run Now). Al terminar, sanity de siembra: conteos por tabla (espero ~2.922.000 en las principales), % canarios, gap denominaciones-balance (<1%), particiones del calendario (la anterior DEBE existir). PARA y enséñame.
-
-FASE B — RUNS: propón parámetros (odate=2025-12-31, environment=dev-adb, horizonte 14, seasonality 7) y tras mi ok lanza en orden: forecasting (3 tareas) → optimize → expert. Si algo sale rojo, PARA con el error literal. Reporta duración por etapa vs las referencias de agosto (desviación >50% = señalarla y buscar causa: params reducidos del GA, cluster, particionado).
-
-FASE C — SANITY DE SALIDAS:
-1. Predicciones: 28.000 filas (2.000×14) · 0 nulos · 3 modelos con valores no triviales y DISTINTOS entre sí · festivos PRESENTES en la ventana (verificar sum de flags > 0 — que H10 no reaparezca).
-2. Decisiones: 2.000 filas · canarios ACTUANDO (las fuera-de-banda con retiradas/pedidos — nada de "todo en calma") · % is_feasible y distribución de acciones.
-3. Tabla final: nombre NUEVO sin _u (sanes_modelo_predictivo) · una fila por oficina · mapas de denominaciones poblados y suma del mapa = total · (is_feasible/coste_estimado aún NO están — cambio de código pendiente, no es fallo).
-4. Cero claves duplicadas en las tres salidas.
-COSECHA: esperado-vs-obtenido con ✓/✗ + tiempos + bloque de evidencia EN ESPAÑOL listo para Jira: "prueba de volumen real en dev completada — 2.000 oficinas × 4 años, identidades correctas (siembra y ejecución como SP en zona de runtime), tiempos en línea con baseline de agosto".
-
-FASE D — FLECO PARA EL REDEPLOY DE INT: verifica si la plantilla del job de siembra se crearía también en int al desplegar — si es así, proponme cómo limitarla a dev (condición tipo la del auto-test del install, o plantilla solo en dev-adb). Int no debe tener job de siembra.
+1. Crea la plantilla job_e2e_cash_supply.json (o nombre según convención): UN job multi-task de punta a punta — tareas encadenadas con depends_on: create-training → create-forecasting → run-predictions → optimize → expert. Mismo patrón que las plantillas existentes: {{JOB_GROUP}}, policy, job cluster como el del seed/integración (identidad SP), parámetros de job (odate, environment, forecast_horizon, seasonality) que las tareas reciben como el del lab.
+2. Referencia de las tareas: los jobs del LAB (CASH_SUPPLY_FORECAST_LAB_50 multi-task y CASH_SUPPLY_OPTIMIZE) — mismos entry points y parámetros, pero todo en un solo job y leyendo la config de dev-adb.
+3. Mientras lo montas, resuelve también la FASE D que quedó pendiente: el job de siembra limitado a dev (que no se cree en int) — misma condición para este si aplica… no: el job E2E multi-task SÍ debe existir en int y pro (es EL job de producción); solo la siembra es dev-only.
+4. PR + merge + redeploy DEV → el install crea el job unificado → lo lanzo con Run Now (como la siembra, que ya demostró que puedo dispararlos) → FASES B y C continúan donde estaban.
+NADA de jobs temporales ni run_as: los jobs desplegados ya corren con la identidad correcta.
