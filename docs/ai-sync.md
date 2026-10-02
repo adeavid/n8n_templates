@@ -44,8 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-STOP a los parches — primero el mapa completo de permisos. Matriz de grants:
-
-1. SHOW GRANTS sobre el catálogo pre_app Y sobre el esquema pre_app.delphi_ho, y dime qué tiene CADA identidad: mi usuario, el grupo gr_san_azr_apl_delphi_ho_pre, y el principal/single_user que ejecuta los job clusters (confirma primero QUIÉN es exactamente esa identidad en los jobs de dev).
-2. LA COMPARACIÓN CLAVE: ¿qué grants tiene el grupo equivalente de delphi-models sobre pre_app y sobre su esquema? Si su grupo tiene BROWSE (u otros) y el nuestro no → nuestro grupo está INFRAAPROVISIONADO respecto al patrón de la casa, y pedir la paridad es un fix de infraestructura legítimo, no un parche.
-3. Con la matriz delante: veredicto de qué le falta exactamente a la identidad del job para operar en SU PROPIO esquema como delphi-models opera en el suyo.
+Experimento mínimo para mapear los permisos EFECTIVOS del SP (la incógnita que decide todo): crea un job desechable en dev (mismo job cluster/policy que los reales, identidad SP) cuyo notebook haga solo:
+1. SELECT count(*) de una tabla sembrada en pre_app.delphi_ho (¿el SP puede LEER la siembra?)
+2. CREATE TABLE pre_app.delphi_ho.__sp_test (x INT) + DROP (¿puede ESCRIBIR?)
+3. Lo mismo contra pre_app.delphi (CREATE+DROP) (¿dónde SÍ puede hacer DDL?)
+Reporta los 3 resultados con el error literal de cada fallo. Con eso tenemos el mapa efectivo del SP sin especular con herencias de grupo que no podemos ver.
