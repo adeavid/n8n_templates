@@ -44,12 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Alto — antes de pedir BROWSE a plataforma, tres verificaciones:
+STOP a los parches — primero el mapa completo de permisos. Matriz de grants:
 
-1. EL ORIGEN DEL USE: ¿qué notebook/línea exacta ejecuta `USE pre_app.delphi_ho`? ¿Está en código NUESTRO de esta semana (el notebook de vistas convertido, el de integration testing tocado por la coherencia)? Dame el diff: ¿ese USE existía en el despliegue anterior de dev — el que dio VERDE con el test de integración incluido y SIN permiso BROWSE? Si el USE es nuevo nuestro, el permiso "faltante" lo hemos fabricado nosotros hoy.
-
-2. EL PERÍMETRO REAL: lista TODOS los sitios del repo que ejecutan USE (catalog/schema). ¿Son 1-2 notebooks nuestros o de verdad "notebooks, tests y aplicaciones"? Con números, no con adjetivos.
-
-3. EL FIX SIN PERMISOS: en los notebooks nuestros, sustituye el USE por NOMBRES TOTALMENTE CUALIFICADOS (catalog.schema.tabla vía los widgets que ya tienen) — es el estilo más robusto de todas formas (un notebook que depende de USE es frágil ante el contexto). Si el perímetro del punto 2 confirma que es nuestro y pequeño: aplica el cambio en la rama, mvn validate, y me dices para mergear y relanzar SIN pedir nada a nadie.
-
-Si el punto 1 demostrara que el USE ya estaba y antes funcionaba — entonces algo más cambió (¿identidad del cluster? ¿warehouse vs job?) y quiero ESE diagnóstico antes de aceptar que el permiso es la causa.
+1. SHOW GRANTS sobre el catálogo pre_app Y sobre el esquema pre_app.delphi_ho, y dime qué tiene CADA identidad: mi usuario, el grupo gr_san_azr_apl_delphi_ho_pre, y el principal/single_user que ejecuta los job clusters (confirma primero QUIÉN es exactamente esa identidad en los jobs de dev).
+2. LA COMPARACIÓN CLAVE: ¿qué grants tiene el grupo equivalente de delphi-models sobre pre_app y sobre su esquema? Si su grupo tiene BROWSE (u otros) y el nuestro no → nuestro grupo está INFRAAPROVISIONADO respecto al patrón de la casa, y pedir la paridad es un fix de infraestructura legítimo, no un parche.
+3. Con la matriz delante: veredicto de qué le falta exactamente a la identidad del job para operar en SU PROPIO esquema como delphi-models opera en el suyo.
