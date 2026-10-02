@@ -44,8 +44,12 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Experimento mínimo para mapear los permisos EFECTIVOS del SP (la incógnita que decide todo): crea un job desechable en dev (mismo job cluster/policy que los reales, identidad SP) cuyo notebook haga solo:
-1. SELECT count(*) de una tabla sembrada en pre_app.delphi_ho (¿el SP puede LEER la siembra?)
-2. CREATE TABLE pre_app.delphi_ho.__sp_test (x INT) + DROP (¿puede ESCRIBIR?)
-3. Lo mismo contra pre_app.delphi (CREATE+DROP) (¿dónde SÍ puede hacer DDL?)
-Reporta los 3 resultados con el error literal de cada fallo. Con eso tenemos el mapa efectivo del SP sin especular con herencias de grupo que no podemos ver.
+El experimento por impersonación está vetado (correcto por seguridad) — hagámoslo por arqueología, que las evidencias ya existen:
+
+1. ¿QUIÉN ES EL DUEÑO de cada esquema? DESCRIBE SCHEMA EXTENDED pre_app.delphi y pre_app.delphi_ho → campo Owner de cada uno. (Hipótesis: delphi es propiedad del SP o su linaje — por eso hace DDL sin grants visibles, los dueños no necesitan grants — y delphi_ho es del grupo humano.)
+
+2. LA PRUEBA DEL DDL PASADO: ¿existe pre_app.delphi.cdp_bigdata_users_with_department (el sink del cooking)? Tenemos SELECT sobre delphi — compruébalo, y si existe: DESCRIBE EXTENDED → owner y fecha de creación. Si la creó el SP el día del primer deploy verde → demostrado que el SP hace DDL en delphi, sin ejecutar nada nuevo.
+
+3. Y el fallo #27 ya es la otra mitad del mapa: SP + CREATE en delphi_ho = denegado.
+
+Con 1+2+3, la matriz de identidades queda completa con pura evidencia histórica: usuario→delphi_ho ✓/delphi ✗ · SP→delphi ✓/delphi_ho ✗. Dame los owners y cierro la petición a plataforma.
