@@ -44,24 +44,12 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Plan de resolución del E2E sin peticiones a nadie. Hipótesis de trabajo: delphi = zona de EJECUCIÓN (el SP de los jobs opera ahí) y delphi_ho = zona de trabajo HUMANO; el choque de la semana era de identidades, no de permisos faltantes. Por fases:
+Evidencia suficiente por la vía conductual (verde histórico del test contra delphi + DDL de delphi-models con el mismo SP + dobles rojos contra delphi_ho; la ausencia del sink la explica el teardown). ADELANTE con las fases 1 y 2 con dos ajustes:
 
-FASE 0 — EVIDENCIA (solo queries de metadatos, nada de ejecutar jobs):
-a) DESCRIBE SCHEMA EXTENDED pre_app.delphi y pre_app.delphi_ho → campo Owner de cada uno.
-b) ¿Existe pre_app.delphi.cdp_bigdata_users_with_department (el sink del cooking del primer deploy verde)? Si existe: DESCRIBE EXTENDED → owner y fecha de creación (¿la creó el SP el día del verde?).
-c) Diagnóstico del último run rojo de la pipeline: confirma que el fallo es la misma familia (identidad SP sin acceso a delphi_ho) y no algo nuevo.
-PARA y enséñame la evidencia. Si los owners/creaciones confirman la hipótesis (SP opera en delphi), seguimos; si la contradicen, replanteamos ANTES de tocar config otra vez — no hacemos un tercer flip de esquema sin evidencia.
+1. FASE 1 (revert runtime a delphi) tal como estaba — sink, fixtures del test y fuentes de LOS JOBS a pre_app.delphi. Documentación: "delphi = zona de ejecución (SP) · delphi_ho = sandbox humano", con la evidencia conductual citada.
 
-FASE 1 — REVERT DE RUNTIME A delphi (tras mi ok):
-En dev-adb: las referencias que usan LOS JOBS (sink del flujo, fuentes que leen los jobs, destino de las vistas, fixtures del test de integración) vuelven a pre_app.delphi. delphi_ho queda SOLO como zona de trabajo humano (documentado así: "delphi = runtime/SP · delphi_ho = sandbox humano del área"). Rama corta sobre develop limpio — y cuidado de no arrastrar los parches intermedios que queden obsoletos con este enfoque (revisa qué quedó de fix/dev-e2e-no-browse y fix/dev-e2e-reuse-sink: lo que ya no aplique, fuera).
+2. AJUSTE A LAS VISTAS EN DEV — simplificación: las fuentes del contrato nuevo (branch_cash_servicing, calendar_datagen) NO van a existir en la zona app de dev de forma natural (nadie con permisos ahí las produce). El ensayo del contrato con tablas reales se hará EN INT, donde esas tablas viven en zona gobernada y el SP las leerá con los permisos de lectura ya previstos. Así que: el job de vistas en dev queda como está (no-bloqueante, fallo controlado "faltan fuentes" documentado como esperado hasta int), y NO perseguimos crear copias del contrato nuevo en dev. Menos piezas, menos identidades, menos permisos.
 
-FASE 2 — LA SIEMBRA COMO JOB (identidad SP):
-Convierte e2e_volume_seed.py en un job desplegable por la maquinaria del proyecto (plantilla tipo job_python, mismo patrón que el test de integración), parametrizado, que siembre en pre_app.delphi. Mismas reglas de siempre: 2.000 oficinas × 4 años, canarios, denominaciones que suman, partición anterior del calendario (H10). Documentado como utilidad de dev (se retira o desactiva de cara a pro).
+3. FASE 2 (siembra como job con identidad SP, sembrando en pre_app.delphi) tal como estaba — reglas de siempre, partición anterior del calendario incluida.
 
-FASE 3 — MERGE + REDEPLOY DEV:
-PR, merge, Build with Parameters DEV. Esperado: install verde + lanzar el job de siembra → siembra en delphi con identidad SP.
-
-FASE 4 — E2E:
-Con la siembra SP en delphi: los runs (forecast → optimize → expert) + el sanity completo del plan original (28.000 predicciones, canarios actuando, festivos presentes, tabla final sin _u, sin duplicados, tiempos vs agosto). Yo verifico leyendo con mi SELECT sobre delphi.
-
-En cada fase: cosecha corta y parada si algo no cuadra con la hipótesis.
+4. Luego: PR única y limpia (consolidando y descartando los parches intermedios de las ramas fix/dev-e2e-* que este enfoque deja obsoletos), merge, redeploy DEV, siembra, y fases 3-4 del E2E.
