@@ -44,16 +44,14 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Contexto: en el workspace de INT, Agustín ha cargado int_app.delphi.branch_cash_servicing e int_app.delphi.calendar_datagen con datos reales. Quiero reconocimiento completo en SOLO LECTURA antes de lanzar el E2E de int. Nada de escribir, crear ni modificar; en la cosecha solo conteos, fechas, esquemas y nombres — jamás filas de datos.
+El error de int_app ("Catalog was not found" en vez de PERMISSION_DENIED) sugiere que la sesión está autenticada contra el workspace equivocado, no que falten permisos. Sigue todo en SOLO LECTURA.
 
-A. Particiones (lo más importante): para cada una de las dos tablas: valores distintos de la columna de partición (data_date_part o equivalente), con conteo de filas por partición y min–max. Para calendar_datagen, recuerda que necesito saber si hay partición ESTRICTAMENTE ANTERIOR a la fecha de datos de branch (resolución de calendario).
+1. Identifica la sesión actual: dime a qué host de workspace apunta la sesión/perfil que usaste (la URL del workspace, NUNCA tokens ni credenciales) y lista los 19 catálogos que devolvió SHOW CATALOGS. Si entre ellos está pre_app, estamos en el workspace de dev.
 
-B. Contrato de esquema: columnas (nombre y tipo) de ambas tablas, comparadas con lo que esperan nuestro código y las vistas de proyección en int. Repórtame cualquier columna que falte, sobre o cambie de tipo — sin corregir nada.
+2. Apunta al workspace de INT: yo tengo acceso concedido al workspace de integración (es donde desplegamos con CloudBees). Configura un perfil contra ese host (mismo método de autenticación que el actual, solo cambia el workspace; si necesitas que yo haga el login interactivo, me dices los pasos y lo hago yo). No crees ni modifiques nada en el workspace.
 
-C. Inventario de arqueos: SHOW TABLES en int_app.delphi — lista completa de lo que hay. Después comprueba si existe algo tipo arqueos accesible desde int: ¿existe pro_business_estructurales.cdl_modelos.sanes_arqueos? ¿Alguna tabla con "arqueo" en el nombre en los catálogos/esquemas que podamos listar desde este workspace? Solo existencia y conteo de filas si es legible; si algún catálogo da error de permiso, reporta el error literal y sigue.
+3. Desde la sesión de int, repite el reconocimiento completo: SHOW CATALOGS (¿aparece ya int_app?), y si aparece: los bloques A–E del prompt anterior (particiones de las dos tablas con conteos y min–max, contrato de esquema contra las vistas, inventario de arqueos, presencia de los 36 pilotos, volumen total). Mismas reglas: solo conteos/fechas/esquemas, nunca filas.
 
-D. Piloto: de los 36 idcent de PILOT_BRANCHES, ¿cuántos están presentes en int_app.delphi.branch_cash_servicing? (Conteo, no la lista de códigos.) Esto me predice cuántas filas puede dar la tabla final en int.
+4. En paralelo, reintenta las PENDING de dev: comprueba si el warehouse SQL_DELPHI_PRE ya está RUNNING y, si lo está, lanza las consultas que quedaron pendientes: lotes de predicciones por prediction_datetime en la partición 2025-12-30 (¿dos bloques de 28.000?), duplicados exactos por clave triple, filas del horizonte en festivo (>0 esperado), flags agregados de decisiones y canarios, y qué tienen en común las 11 oficinas de la tabla final (agregado, sin listar datos).
 
-E. Volumen: filas totales y oficinas distintas de branch_cash_servicing — para dimensionar la prueba de rendimiento frente a las 2.000 de dev.
-
-Si algo no es consultable por permisos, repórtalo tal cual; no lo sustituyas ni lo deduzcas.
+Si tras apuntar al workspace de int el catálogo int_app SIGUE sin aparecer, no intentes nada más: repórtame el error literal y paro — eso ya sería un tema de visibilidad de mi usuario y lo gestiono yo por otra vía.
