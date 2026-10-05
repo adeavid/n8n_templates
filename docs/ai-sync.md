@@ -44,16 +44,16 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Contexto: el run verde de CASH_SUPPLY_E2E_PYTHON (odate=2025-12-31) escribió todo en la partición 2025-12-30: predicciones 56.000 (esperaba 28.000), decisiones 2.000 (ok), tabla final 11 (esperaba 2.000). Antes hubo un run fallido en expert con los mismos parámetros. Necesito forense en SOLO LECTURA: nada de modificar, borrar ni relanzar; en la cosecha solo conteos, agregados y resúmenes de código, nunca filas.
+Contexto: en el workspace de INT, Agustín ha cargado int_app.delphi.branch_cash_servicing e int_app.delphi.calendar_datagen con datos reales. Quiero reconocimiento completo en SOLO LECTURA antes de lanzar el E2E de int. Nada de escribir, crear ni modificar; en la cosecha solo conteos, fechas, esquemas y nombres — jamás filas de datos.
 
-A. Semántica de partición: localiza en el código cómo se deriva data_date_part a partir del odate (¿odate tal cual, odate−1, otra cosa?). Dime fichero y resumen de la lógica. ¿2025-12-30 es el comportamiento esperado para odate=2025-12-31?
+A. Particiones (lo más importante): para cada una de las dos tablas: valores distintos de la columna de partición (data_date_part o equivalente), con conteo de filas por partición y min–max. Para calendar_datagen, recuerda que necesito saber si hay partición ESTRICTAMENTE ANTERIOR a la fecha de datos de branch (resolución de calendario).
 
-B. Predicciones (partición 2025-12-30): total de filas; filas distintas por clave (oficina + fecha objetivo); nº de claves con más de una fila. Si hay columna de timestamp/run que distinga tandas, reparto de filas por tanda (¿dos bloques de 28.000?). Y en el código: ¿el write de predicciones es append o sobrescribe la partición (overwrite/replaceWhere)?
+B. Contrato de esquema: columnas (nombre y tipo) de ambas tablas, comparadas con lo que esperan nuestro código y las vistas de proyección en int. Repórtame cualquier columna que falte, sobre o cambie de tipo — sin corregir nada.
 
-C. Decisiones (2025-12-30): total, oficinas distintas, duplicados por clave, presencia de los canarios 0001-0200, resumen agregado de flags. Y modo de escritura en código (¿por qué aquí 2.000 y no 4.000? ¿sobrescribe?).
+C. Inventario de arqueos: SHOW TABLES en int_app.delphi — lista completa de lo que hay. Después comprueba si existe algo tipo arqueos accesible desde int: ¿existe pro_business_estructurales.cdl_modelos.sanes_arqueos? ¿Alguna tabla con "arqueo" en el nombre en los catálogos/esquemas que podamos listar desde este workspace? Solo existencia y conteo de filas si es legible; si algún catálogo da error de permiso, reporta el error literal y sigue.
 
-D. Tabla final — las 11 filas: qué oficinas son y qué tienen en común (agregado: ¿todas con is_order_recommended_today=1? ¿misma moneda? ¿canarios?). Y en el código de la tarea expert / escritura final: qué filtros se aplican entre las entradas y el insert. Compara con el diff de mi fix de hoy en expert: muéstrame resumen del diff y evalúa si el cambio puede explicar que de ~2.000 filas queden 11.
+D. Piloto: de los 36 idcent de PILOT_BRANCHES, ¿cuántos están presentes en int_app.delphi.branch_cash_servicing? (Conteo, no la lista de códigos.) Esto me predice cuántas filas puede dar la tabla final en int.
 
-E. Festivos y nulos sobre 2025-12-30: repite los checks pendientes en esta partición: filas del horizonte en festivo (>0 esperado), nulos en predicción, modelos distintos y reparto.
+E. Volumen: filas totales y oficinas distintas de branch_cash_servicing — para dimensionar la prueba de rendimiento frente a las 2.000 de dev.
 
-No arregles nada de lo que encuentres — repórtalo y decido yo. Formato: por bloque, "pregunta | respuesta | evidencia (conteo o fichero:línea)".
+Si algo no es consultable por permisos, repórtalo tal cual; no lo sustituyas ni lo deduzcas.
