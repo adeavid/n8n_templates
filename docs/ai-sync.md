@@ -44,28 +44,16 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Contexto: el job CASH_SUPPLY_E2E_PYTHON ha terminado en verde en dev (parámetros: odate=2025-12-31, environment=dev, forecast_horizon=14, seasonality=7, sobre la siembra de pre_app.delphi). Necesito la cosecha de sanity ANTES de dar por validado el run. Todo en modo SOLO LECTURA: consultas de conteo y agregación, nada de modificar tablas ni relanzar nada. En la cosecha solo números, esquemas y resúmenes — nunca filas de datos.
+Contexto: el run verde de CASH_SUPPLY_E2E_PYTHON (odate=2025-12-31) escribió todo en la partición 2025-12-30: predicciones 56.000 (esperaba 28.000), decisiones 2.000 (ok), tabla final 11 (esperaba 2.000). Antes hubo un run fallido en expert con los mismos parámetros. Necesito forense en SOLO LECTURA: nada de modificar, borrar ni relanzar; en la cosecha solo conteos, agregados y resúmenes de código, nunca filas.
 
-A. El run en sí:
+A. Semántica de partición: localiza en el código cómo se deriva data_date_part a partir del odate (¿odate tal cual, odate−1, otra cosa?). Dime fichero y resumen de la lógica. ¿2025-12-30 es el comportamiento esperado para odate=2025-12-31?
 
-Estado final y duración de cada una de las 5 tareas (create-training, create-forecasting, run-predictions, optimize, expert) y duración total del job.
+B. Predicciones (partición 2025-12-30): total de filas; filas distintas por clave (oficina + fecha objetivo); nº de claves con más de una fila. Si hay columna de timestamp/run que distinga tandas, reparto de filas por tanda (¿dos bloques de 28.000?). Y en el código: ¿el write de predicciones es append o sobrescribe la partición (overwrite/replaceWhere)?
 
-B. Tabla de predicciones:
-2. Conteo total de filas para odate=2025-12-31 (espero 28.000 = 2.000 oficinas × 14 días).
-3. Oficinas distintas (espero 2.000) y fechas objetivo distintas (espero 14), con el rango min–max de fechas.
-4. Conteo de nulos en la columna de predicción (espero 0).
-5. Modelos distintos usados (espero 3) y reparto de filas por modelo.
-6. Conteo de filas del horizonte que caen en festivo según el calendario (espero > 0 — el horizonte incluye fin de año; si sale 0, repórtalo como ANOMALÍA, no lo justifiques).
+C. Decisiones (2025-12-30): total, oficinas distintas, duplicados por clave, presencia de los canarios 0001-0200, resumen agregado de flags. Y modo de escritura en código (¿por qué aquí 2.000 y no 4.000? ¿sobrescribe?).
 
-C. Tabla de decisiones:
-7. Conteo de filas para el odate (espero 2.000, una por oficina) y duplicados por clave (espero 0).
-8. Las oficinas canario de la siembra: confirma que aparecen y dame un resumen agregado de sus decisiones (sin datos fila a fila).
+D. Tabla final — las 11 filas: qué oficinas son y qué tienen en común (agregado: ¿todas con is_order_recommended_today=1? ¿misma moneda? ¿canarios?). Y en el código de la tarea expert / escritura final: qué filtros se aplican entre las entradas y el insert. Compara con el diff de mi fix de hoy en expert: muéstrame resumen del diff y evalúa si el cambio puede explicar que de ~2.000 filas queden 11.
 
-D. Tabla final sanes_modelo_predictivo:
-9. Conteo de filas para el odate y duplicados por clave (espero 0 duplicados).
-10. Esquema real: número de columnas y sus nombres. En particular: ¿existen is_feasible y coste_estimado? Si existen, % de nulos en cada una (el cambio de código que las alimenta aún no está hecho, así que repórtame lo que haya SIN arreglar nada).
-11. Conteo de nulos por columna en el resto de campos.
+E. Festivos y nulos sobre 2025-12-30: repite los checks pendientes en esta partición: filas del horizonte en festivo (>0 esperado), nulos en predicción, modelos distintos y reparto.
 
-Restricciones: no modifiques nada, no relances nada, no "corrijas" ninguna anomalía que encuentres — repórtala y paro yo. Si alguna consulta no se puede hacer, di cuál y por qué, no la sustituyas por otra cosa.
-
-Formato de salida: tabla por bloque (A/B/C/D) con columna "esperado | obtenido | ✓/✗", para que me sirva directamente como evidencia de Jira.
+No arregles nada de lo que encuentres — repórtalo y decido yo. Formato: por bloque, "pregunta | respuesta | evidencia (conteo o fichero:línea)".
