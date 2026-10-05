@@ -44,15 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Contexto: el código lee branch_360 (vista de la capa de proyección), así que el E2E de int depende de que PROJECTION_VIEWS_SQL cree las vistas en int. Además run-predictions exige 57 observaciones/oficina y create-training fabrica rejilla desde start_date rellenando con y=0. Tres frentes:
+Contexto: en int, PROJECTION_VIEWS_SQL creó las vistas con sufijo _projection (branch_360_50_projection, calendarios ídem), pero el runtime busca los nombres sin sufijo (falló con "int_app.delphi.branch_360_50 cannot be found"). En dev no se manifiesta porque la siembra creó branch_360_50 como tabla física. Solución: alinear los VALORES de nombres de tabla del entorno de int a los nombres reales de las vistas.
 
-Frente 1 — PR feature/arqueos-int-gold (solo valores de int):
-
-Rama desde develop actualizado.
-Cambia el valor de la clave de arqueos en la config de int (la que cualificó e4e5c52) a pro_common_canales.oficina_operativa.sanes_arqueos, comentario # FQN definitivo en zona gobernada (confirmado por plataforma 5-oct). Sin TODO de reversión. NO renombres claves.
-Revisa los parámetros/plantilla del job PROJECTION_VIEWS_SQL para int: ¿a qué FQN apuntan sus fuentes? Si apuntan a pro gobernada (inexistente), cámbialos a int_app.delphi.branch_cash_servicing y int_app.delphi.calendar_datagen CON el TODO temporal de reversión (como en cash_movements.properties). Si ya apuntan bien, repórtalo y no toques nada.
-No toques dev/lab/pro ni código Python. Cosecha: ficheros, valor antiguo → nuevo por cada uno, diff --stat, confirmación dev/lab/pro intactos, y cualquier otra referencia al FQN deducido inexistente (listar, no cambiar).
-
-Frente 2 — start_date (deducción, sin ejecutar): ¿de dónde sale start_date en el flujo (forecasting.yaml, parámetro de job, derivado del odate)? ¿Qué valor efectivo tendría en int con odate=2026-09-15? Calcula la longitud de rejilla resultante y dime: ¿supera las 57 observaciones? Si es parámetro nuestro, ¿qué valor habría que pasarle para asegurar ≥57? Solo deducción con fichero:línea.
-
-Frente 3 — forense del PROJECTION_VIEWS_SQL rojo en int (solo lectura): fecha/hora del último run fallido, mensaje de error literal (truncado si largo) y qué FQN intentó usar. ¿Es anterior o posterior al último despliegue de int?
+Lista exacta de nombres de tabla de entrada que el runtime resuelve en int (branch_360 y los calendarios, con sus sufijos actuales) y de dónde salen (global_environment_variables.json de int u otro fichero).
+Lista exacta de las vistas que crea PROJECTION_VIEWS_SQL en int_app.delphi (nombres con _projection).
+Rama feature/nombres-vistas-int desde develop: cambia SOLO LOS VALORES de esos nombres en la config de int para que apunten a las vistas _projection — cada nombre esperado → su vista correspondiente, uno a uno. NO renombres claves, NO toques dev/lab/pro, NO toques el SQL de las vistas ni código Python. Comentario junto a cada cambio: # int lee las vistas de proyección (_projection); dev lee tablas físicas de siembra.
+Verifica como confirmación: en dev existe branch_360_50 como tabla física (de la siembra), ¿correcto? Repórtalo.
+Cosecha: fichero(s), valor antiguo → nuevo por cada clave, diff --stat contra develop, confirmación dev/lab/pro intactos, y confirma que TODOS los nombres de entrada que el runtime busca tienen su vista pareja (si alguno no la tiene, repórtalo — no lo inventes).
