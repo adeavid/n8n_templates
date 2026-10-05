@@ -44,10 +44,26 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-El bloqueo de la Fase B revela la pieza que falta: los jobs del PROCESO no están templatizados en resources (en el lab se crearon a mano) — por eso no hay nada que lanzar en dev y intentaste un job temporal. La solución es la tarea ya acordada con plataforma: EL JOB ÚNICO MULTI-TASK. Hazlo ahora:
+Contexto: en integración, el equipo de datos aún no ha publicado las tablas origen en la zona gobernada de pro. Como puente temporal, Agustín las ha cargado en la zona privada de la aplicación en int. Hay que cambiar el apuntamiento de los sources del entorno de int para leer de ahí. Es un cambio SOLO de valores de configuración, SOLO del entorno de int.
 
-1. Crea la plantilla job_e2e_cash_supply.json (o nombre según convención): UN job multi-task de punta a punta — tareas encadenadas con depends_on: create-training → create-forecasting → run-predictions → optimize → expert. Mismo patrón que las plantillas existentes: {{JOB_GROUP}}, policy, job cluster como el del seed/integración (identidad SP), parámetros de job (odate, environment, forecast_horizon, seasonality) que las tareas reciben como el del lab.
-2. Referencia de las tareas: los jobs del LAB (CASH_SUPPLY_FORECAST_LAB_50 multi-task y CASH_SUPPLY_OPTIMIZE) — mismos entry points y parámetros, pero todo en un solo job y leyendo la config de dev-adb.
-3. Mientras lo montas, resuelve también la FASE D que quedó pendiente: el job de siembra limitado a dev (que no se cree en int) — misma condición para este si aplica… no: el job E2E multi-task SÍ debe existir en int y pro (es EL job de producción); solo la siembra es dev-only.
-4. PR + merge + redeploy DEV → el install crea el job unificado → lo lanzo con Run Now (como la siembra, que ya demostró que puedo dispararlos) → FASES B y C continúan donde estaban.
-NADA de jobs temporales ni run_as: los jobs desplegados ya corren con la identidad correcta.
+Tarea:
+
+Crea una rama feature/sources-int-zona-privada desde develop actualizado.
+Localiza en la configuración del entorno de int (integration-adb / properties de int) los sources que hoy apuntan a los FQN de la zona gobernada de pro para estas dos tablas: la de branch cash servicing y pro_business_estructurales.cdl_modelos.calendar_datagen.
+Cambia ÚNICAMENTE los valores de esos sources a estos FQN exactos (me los pasó por escrito el dueño de las tablas):
+int_app.delphi.branch_cash_servicing
+int_app.delphi.calendar_datagen
+Junto a cada valor cambiado, añade un comentario # TODO: temporal — revertir a FQN de pro gobernada cuando el equipo de datos publique las tablas (los FQN definitivos quedan aquí en el comentario), conservando en ese comentario el FQN antiguo para que la reversión sea copy-paste.
+
+Restricciones estrictas:
+
+NO renombres ninguna clave de configuración, solo valores (el config loader ignora claves desconocidas en silencio).
+NO toques la configuración de dev, lab ni pro, ni código Python, ni jobs, ni el DDL.
+NO inventes ni deduzcas ningún otro valor: si encuentras más sources que creas relacionados, NO los cambies — repórtamelos y decido yo.
+Si te desvías en algo de estas instrucciones, decláralo explícitamente.
+
+Cosecha (sin volcar datos ni contenido de ficheros, solo resumen):
+
+Lista de ficheros tocados y, por cada uno, la clave modificada con valor antiguo → valor nuevo.
+Confirmación explícita de que ningún fichero de dev/lab/pro cambió (ej. salida de un git diff --stat contra develop).
+Cualquier source adicional que apunte a esas dos tablas y que NO hayas tocado.
