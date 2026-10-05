@@ -44,26 +44,28 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Contexto: en integración, el equipo de datos aún no ha publicado las tablas origen en la zona gobernada de pro. Como puente temporal, Agustín las ha cargado en la zona privada de la aplicación en int. Hay que cambiar el apuntamiento de los sources del entorno de int para leer de ahí. Es un cambio SOLO de valores de configuración, SOLO del entorno de int.
+Contexto: el job CASH_SUPPLY_E2E_PYTHON ha terminado en verde en dev (parámetros: odate=2025-12-31, environment=dev, forecast_horizon=14, seasonality=7, sobre la siembra de pre_app.delphi). Necesito la cosecha de sanity ANTES de dar por validado el run. Todo en modo SOLO LECTURA: consultas de conteo y agregación, nada de modificar tablas ni relanzar nada. En la cosecha solo números, esquemas y resúmenes — nunca filas de datos.
 
-Tarea:
+A. El run en sí:
 
-Crea una rama feature/sources-int-zona-privada desde develop actualizado.
-Localiza en la configuración del entorno de int (integration-adb / properties de int) los sources que hoy apuntan a los FQN de la zona gobernada de pro para estas dos tablas: la de branch cash servicing y pro_business_estructurales.cdl_modelos.calendar_datagen.
-Cambia ÚNICAMENTE los valores de esos sources a estos FQN exactos (me los pasó por escrito el dueño de las tablas):
-int_app.delphi.branch_cash_servicing
-int_app.delphi.calendar_datagen
-Junto a cada valor cambiado, añade un comentario # TODO: temporal — revertir a FQN de pro gobernada cuando el equipo de datos publique las tablas (los FQN definitivos quedan aquí en el comentario), conservando en ese comentario el FQN antiguo para que la reversión sea copy-paste.
+Estado final y duración de cada una de las 5 tareas (create-training, create-forecasting, run-predictions, optimize, expert) y duración total del job.
 
-Restricciones estrictas:
+B. Tabla de predicciones:
+2. Conteo total de filas para odate=2025-12-31 (espero 28.000 = 2.000 oficinas × 14 días).
+3. Oficinas distintas (espero 2.000) y fechas objetivo distintas (espero 14), con el rango min–max de fechas.
+4. Conteo de nulos en la columna de predicción (espero 0).
+5. Modelos distintos usados (espero 3) y reparto de filas por modelo.
+6. Conteo de filas del horizonte que caen en festivo según el calendario (espero > 0 — el horizonte incluye fin de año; si sale 0, repórtalo como ANOMALÍA, no lo justifiques).
 
-NO renombres ninguna clave de configuración, solo valores (el config loader ignora claves desconocidas en silencio).
-NO toques la configuración de dev, lab ni pro, ni código Python, ni jobs, ni el DDL.
-NO inventes ni deduzcas ningún otro valor: si encuentras más sources que creas relacionados, NO los cambies — repórtamelos y decido yo.
-Si te desvías en algo de estas instrucciones, decláralo explícitamente.
+C. Tabla de decisiones:
+7. Conteo de filas para el odate (espero 2.000, una por oficina) y duplicados por clave (espero 0).
+8. Las oficinas canario de la siembra: confirma que aparecen y dame un resumen agregado de sus decisiones (sin datos fila a fila).
 
-Cosecha (sin volcar datos ni contenido de ficheros, solo resumen):
+D. Tabla final sanes_modelo_predictivo:
+9. Conteo de filas para el odate y duplicados por clave (espero 0 duplicados).
+10. Esquema real: número de columnas y sus nombres. En particular: ¿existen is_feasible y coste_estimado? Si existen, % de nulos en cada una (el cambio de código que las alimenta aún no está hecho, así que repórtame lo que haya SIN arreglar nada).
+11. Conteo de nulos por columna en el resto de campos.
 
-Lista de ficheros tocados y, por cada uno, la clave modificada con valor antiguo → valor nuevo.
-Confirmación explícita de que ningún fichero de dev/lab/pro cambió (ej. salida de un git diff --stat contra develop).
-Cualquier source adicional que apunte a esas dos tablas y que NO hayas tocado.
+Restricciones: no modifiques nada, no relances nada, no "corrijas" ninguna anomalía que encuentres — repórtala y paro yo. Si alguna consulta no se puede hacer, di cuál y por qué, no la sustituyas por otra cosa.
+
+Formato de salida: tabla por bloque (A/B/C/D) con columna "esperado | obtenido | ✓/✗", para que me sirva directamente como evidencia de Jira.
