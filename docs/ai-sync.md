@@ -44,14 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-El error de int_app ("Catalog was not found" en vez de PERMISSION_DENIED) sugiere que la sesión está autenticada contra el workspace equivocado, no que falten permisos. Sigue todo en SOLO LECTURA.
+Dos verificaciones finales en dev, SOLO LECTURA, solo agregados:
 
-1. Identifica la sesión actual: dime a qué host de workspace apunta la sesión/perfil que usaste (la URL del workspace, NUNCA tokens ni credenciales) y lista los 19 catálogos que devolvió SHOW CATALOGS. Si entre ellos está pre_app, estamos en el workspace de dev.
+1. ¿Los dos lotes de predicciones son idénticos en valores? Sobre la partición 2025-12-30, compara el lote 11:24 contra el 13:38: suma y media de la predicción de cada modelo por lote, y conteo de claves donde los valores difieren entre lotes. Si son idénticos, las decisiones del run 2 no están contaminadas por el duplicado; si difieren, dímelo y paro.
 
-2. Apunta al workspace de INT: yo tengo acceso concedido al workspace de integración (es donde desplegamos con CloudBees). Configura un perfil contra ese host (mismo método de autenticación que el actual, solo cambia el workspace; si necesitas que yo haga el login interactivo, me dices los pasos y lo hago yo). No crees ni modifiques nada en el workspace.
-
-3. Desde la sesión de int, repite el reconocimiento completo: SHOW CATALOGS (¿aparece ya int_app?), y si aparece: los bloques A–E del prompt anterior (particiones de las dos tablas con conteos y min–max, contrato de esquema contra las vistas, inventario de arqueos, presencia de los 36 pilotos, volumen total). Mismas reglas: solo conteos/fechas/esquemas, nunca filas.
-
-4. En paralelo, reintenta las PENDING de dev: comprueba si el warehouse SQL_DELPHI_PRE ya está RUNNING y, si lo está, lanza las consultas que quedaron pendientes: lotes de predicciones por prediction_datetime en la partición 2025-12-30 (¿dos bloques de 28.000?), duplicados exactos por clave triple, filas del horizonte en festivo (>0 esperado), flags agregados de decisiones y canarios, y qué tienen en común las 11 oficinas de la tabla final (agregado, sin listar datos).
-
-Si tras apuntar al workspace de int el catálogo int_app SIGUE sin aparecer, no intentes nada más: repórtame el error literal y paro — eso ya sería un tema de visibilidad de mi usuario y lo gestiono yo por otra vía.
+2. ¿Por qué flag_viaje/flag_peticion/flag_envio suman 0 en las 2.000 decisiones? Coge los canarios de la siembra diseñados para forzar acción (los de saldo bajo/extremo según e2e_volume_seed.py) y trázame EN AGREGADO: sus saldos sembrados vs los umbrales/lógica que disparan los flags en el optimizador (fichero:línea de la condición). Conclusión esperada: o "los saldos sembrados no cruzan los umbrales → 0 flags es coherente" o "deberían cruzar y no lo hacen → anomalía". No corrijas nada; repórtalo.
