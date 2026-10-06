@@ -44,16 +44,7 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Run verde de CASH_SUPPLY_E2E_PYTHON en int (odate=2026-09-15 → partición 2026-09-14). Verifica contra esperado, formato "esperado | obtenido | ✓/✗":
-
-A. El run: estado y duración de cada una de las 5 tareas + total. (Referencia dev: ~52 min con 2.000 oficinas × 4 años; aquí hay menos historia real pero rejilla similar.)
-
-B. Predicciones (partición 2026-09-14): total de filas (espero ~30.940 = 2.210 × 14) · oficinas distintas (2.210) · fechas distintas (14, rango 2026-09-15 a 2026-09-28) · nulos en los 3 modelos (0) · magnitud de los valores (espero cercanos a 0 — forecast de juguete por la historia de un día; repórtame min/max/media por modelo, sin filas).
-
-C. Decisiones: total (espero 2.210) · duplicados por clave (0) · límite inferior aplicado: confirmo que todas usan el fallback del 30% configurado (la tabla de security stock está vacía a propósito) · resumen de flags.
-
-D. Tabla final sanes_modelo_predictivo: filas (espero ≤34 — los pilotos presentes tras el join con arqueos; dime cuántas exactamente) · duplicados (0) · columnas (11) · todas las filas son oficinas piloto.
-
-E. La lectura de gold: confirma en los logs/plan de la tarea expert que leyó pro_common_canales.oficina_operativa.sanes_arqueos con éxito (la prueba empírica del acceso del SP, para la evidencia).
-
-No corrijas ni relances nada; esto es el acta.
+Frames de int: en la tabla de entrenamiento y el frame de forecasting (partición 2026-09-14), % de nulos POR COLUMNA — especialmente las features que consume LGBM (lags, ventanas, festivos, seno/coseno). ¿Hay alguna columna totalmente nula o ausente respecto a dev?
+El camino del fix: revisa el diff del fix DST en predictions.py — ¿la normalización de ds afecta a cómo se construyen los lags/features de LGBM? ¿Los tests de caracterización del DST cubren que LGBM produzca VALORES (no solo que no lance el ValueError)? Corre en local la suite del camino LGBM con una serie tipo int (muchos ceros + un valor) y dime si predice números o NaN.
+Lanza el E2E en DEV con los parámetros de siempre (odate=2025-12-31, dev, 14, 7) con el wheel actual. OJO: dev escribe en append (H11) — habrá un tercer lote en predicciones; lo documentamos, no lo limpies ahora.
+Veredicto: ¿LGBM nulo es (a) fix DST, (b) features de int, (c) otra cosa? Con fichero:línea o conteo.
