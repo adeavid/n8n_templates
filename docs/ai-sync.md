@@ -44,7 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Para. No voy a mergear esa rama. Dos verificaciones antes de tocar nada:
+Antes de crear la rama, arqueología SOLO LECTURA para decidir si security_stock es insumo externo o producto propio:
 
-El fallo de Sonar, literal: ¿qué condición del quality gate falló exactamente? (cobertura sobre código nuevo y su %, duplicación, smells, bugs — el mensaje tal cual del análisis). No me digas tu interpretación: el texto del gate.
-La base de tu rama: git merge-base de tu rama nueva contra develop actual, y confirma si develop en tu checkout incluye los merges de ayer (los sources de integration-adb apuntando a int_app.delphi y el cambio de arqueos a pro_common_canales). Si tu develop local está desactualizado, actualízalo y dime qué pensabas "arreglar" que ya estaba arreglado.
+¿Quién la ESCRIBE? Busca en todo el repo (incluido histórico del lab y notebooks) cualquier código que escriba/cree security_stock_branches_cash_estimation (o similar): ¿security_stock.py la produce? ¿Hay notebook/job del flujo original que la genere? ¿O solo hay lecturas en todo el código (= insumo externo)?
+¿Cómo nació en dev? Localiza en e2e_volume_seed.py (o la tarea de preparación que mencionas que existe para dev) cómo se creó: esquema exacto, cuántas filas, con qué contenido.
+¿Qué hace optimize con ella exactamente? Confirma con fichero:línea el comportamiento observado en dev: tabla presente sin valores aplicables → límite inferior configurado del 30%. ¿Y si la tabla existiera VACÍA (0 filas) — mismo fallback o error?
+Veredicto en una línea: "LA PRODUCE X (fichero:línea)" o "SOLO SE LEE — insumo externo". No cambies código todavía.
