@@ -44,9 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Diagnóstico diferencial dev-vs-int del ValueError de MLForecast. SOLO LECTURA, nada de editar. Mismos tipos DATE en origen y mismo código, pero dev pasó e int no — encuentra la divergencia:
+Contexto: diagnóstico cerrado — ds se persiste como TIMESTAMP y al materializarse en pandas adopta hora local Europe/Madrid (01:00/02:00 según DST); MLForecast valida freq="D" sobre esa secuencia local y lanza el ValueError en los cambios de hora. Fix mínimo en el punto de consumo:
 
-La tabla de entrenamiento escrita por create-training: esquema en DEV (partición 2025-12-30) vs INT (2026-09-14). Tipo exacto de la columna temporal (¿DATE o TIMESTAMP?). Si es TIMESTAMP en alguno: valores distintos de hora+offset (agregado) en cada entorno.
-Config de sesión de los runs: spark.sql.session.timeZone efectivo en el run verde de dev vs el fallido de int (spark confs del clúster del job / metadata del run), y versión de runtime del clúster en ambos.
-El camino de la columna temporal en código: dónde se aplica pd.to_datetime(utc=True), dónde el toPandas, y en qué orden respecto al punto donde MLForecast valida freq="D" con intervalos. ¿El utc=True actúa antes o después de lo que ve MLForecast?
-Veredicto en una línea: por qué dev pasa e int no, con evidencia (fichero:línea o conteo). Si la causa es config de clúster/entorno, dime exactamente qué clave difiere y dónde se define en nuestros recursos de despliegue.
+Rama feature/ds-freq-dst desde develop.
+En predictions.py, en el flujo que alimenta MLForecast.fit (incluido el camino de intervalos): normaliza la columna temporal a fecha pura sin zona ANTES de la validación — cast a date en Spark antes del toPandas, o tz_localize(None) + normalize justo después; elige el punto más temprano que cubra TODOS los caminos hacia MLForecast, y que sea UNO solo.
+NO cambies el esquema persistido de la tabla de entrenamiento ni toques datasets.py, salvo que el punto único de consumo viva ahí — en ese caso justifícamelo en la cosecha.
+Test nuevo: una serie que cruce los dos cambios de hora (marzo y octubre) con ds TIMESTAMP en Europe/Madrid, verificando que el flujo ya no lanza el ValueError y produce el horizonte completo. Es el test de caracterización de este bug: tiene que fallar con el código viejo y pasar con el nuevo.
+Suite completa verde. Cosecha: diff resumido (ficheros y líneas), resultado de la suite y del test nuevo, y confirmación de que el cambio vive solo en el punto de consumo.
