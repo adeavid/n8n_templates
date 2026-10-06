@@ -44,10 +44,11 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Contexto: en int, PROJECTION_VIEWS_SQL creó las vistas con sufijo _projection (branch_360_50_projection, calendarios ídem), pero el runtime busca los nombres sin sufijo (falló con "int_app.delphi.branch_360_50 cannot be found"). En dev no se manifiesta porque la siembra creó branch_360_50 como tabla física. Solución: alinear los VALORES de nombres de tabla del entorno de int a los nombres reales de las vistas.
+Forense del ValueError de MLForecast en int, SOLO LECTURA, solo agregados. Series afectadas: 0094, 0097, 0100, 0107, 0108, 0109.
 
-Lista exacta de nombres de tabla de entrada que el runtime resuelve en int (branch_360 y los calendarios, con sus sufijos actuales) y de dónde salen (global_environment_variables.json de int u otro fichero).
-Lista exacta de las vistas que crea PROJECTION_VIEWS_SQL en int_app.delphi (nombres con _projection).
-Rama feature/nombres-vistas-int desde develop: cambia SOLO LOS VALORES de esos nombres en la config de int para que apunten a las vistas _projection — cada nombre esperado → su vista correspondiente, uno a uno. NO renombres claves, NO toques dev/lab/pro, NO toques el SQL de las vistas ni código Python. Comentario junto a cada cambio: # int lee las vistas de proyección (_projection); dev lee tablas físicas de siembra.
-Verifica como confirmación: en dev existe branch_360_50 como tabla física (de la siembra), ¿correcto? Repórtalo.
-Cosecha: fichero(s), valor antiguo → nuevo por cada clave, diff --stat contra develop, confirmación dev/lab/pro intactos, y confirma que TODOS los nombres de entrada que el runtime busca tienen su vista pareja (si alguno no la tiene, repórtalo — no lo inventes).
+En int_app.delphi.branch_cash_servicing: filas por cada idcent afectado (¿sigue siendo 1?) y su(s) zip_code. Compara con 2-3 oficinas sanas.
+En int_app.delphi.calendar_datagen: para esos zips, ¿cuántas filas por calendar_date? ¿Cuántos country_name distintos tiene cada uno de esos zips? Haz lo mismo para los zips de las oficinas sanas.
+En la tabla de entrenamiento que escribió create-training en int: para los idcents afectados, conteo de filas por fecha (¿duplicadas?) y nº de fechas ausentes en el rango; lo mismo para una oficina sana.
+En el código: el join entre branch y calendario — ¿por qué claves cruza (solo zip+fecha, o también country)? Fichero:línea.
+Además: ¿cómo escribe create-training su tabla de salida — sobrescribe partición o append? (Necesito saber si relanzar el E2E es limpio o acumula.)
+Veredicto en una línea: duplicación por join de calendario / duplicado de origen / huecos reales / otra cosa. No corrijas nada.
