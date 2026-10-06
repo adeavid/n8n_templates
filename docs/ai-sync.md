@@ -44,10 +44,7 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Contexto: diagnóstico cerrado — ds se persiste como TIMESTAMP y al materializarse en pandas adopta hora local Europe/Madrid (01:00/02:00 según DST); MLForecast valida freq="D" sobre esa secuencia local y lanza el ValueError en los cambios de hora. Fix mínimo en el punto de consumo:
+Para. No voy a mergear esa rama. Dos verificaciones antes de tocar nada:
 
-Rama feature/ds-freq-dst desde develop.
-En predictions.py, en el flujo que alimenta MLForecast.fit (incluido el camino de intervalos): normaliza la columna temporal a fecha pura sin zona ANTES de la validación — cast a date en Spark antes del toPandas, o tz_localize(None) + normalize justo después; elige el punto más temprano que cubra TODOS los caminos hacia MLForecast, y que sea UNO solo.
-NO cambies el esquema persistido de la tabla de entrenamiento ni toques datasets.py, salvo que el punto único de consumo viva ahí — en ese caso justifícamelo en la cosecha.
-Test nuevo: una serie que cruce los dos cambios de hora (marzo y octubre) con ds TIMESTAMP en Europe/Madrid, verificando que el flujo ya no lanza el ValueError y produce el horizonte completo. Es el test de caracterización de este bug: tiene que fallar con el código viejo y pasar con el nuevo.
-Suite completa verde. Cosecha: diff resumido (ficheros y líneas), resultado de la suite y del test nuevo, y confirmación de que el cambio vive solo en el punto de consumo.
+El fallo de Sonar, literal: ¿qué condición del quality gate falló exactamente? (cobertura sobre código nuevo y su %, duplicación, smells, bugs — el mensaje tal cual del análisis). No me digas tu interpretación: el texto del gate.
+La base de tu rama: git merge-base de tu rama nueva contra develop actual, y confirma si develop en tu checkout incluye los merges de ayer (los sources de integration-adb apuntando a int_app.delphi y el cambio de arqueos a pro_common_canales). Si tu develop local está desactualizado, actualízalo y dime qué pensabas "arreglar" que ya estaba arreglado.
