@@ -44,8 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Contexto: el ValueError de MLForecast viene de que las fechas llegan como TIMESTAMP con zona (medianoches UTC → 01:00+01/02:00+02 Madrid) y la validación freq="D" se rompe en los cambios de hora. Hipótesis: la vista de proyección sirve transaction_date como TIMESTAMP mientras el contrato original (y la tabla física de dev) es DATE.
+Diagnóstico diferencial dev-vs-int del ValueError de MLForecast. SOLO LECTURA, nada de editar. Mismos tipos DATE en origen y mismo código, pero dev pasó e int no — encuentra la divergencia:
 
-Confirma tipos (solo lectura): tipo de transaction_date, month_date y data_date_part en (a) int_app.delphi.branch_cash_servicing, (b) la vista branch_360_50_projection, (c) la tabla física pre_app.delphi.branch_360_50 de dev (el contrato de referencia); y calendar_date en la vista de calendario vs su físico de dev. Tabla comparativa.
-Si se confirma: rama feature/vistas-cast-date — en el SQL de las vistas de proyección, CAST a DATE de todas las columnas de fecha que el contrato original define como DATE (las que salgan del punto 1, no solo transaction_date — no quiero jugar otra ronda de este juego con month_date). SOLO el SQL de vistas: ni Python, ni configs, ni otros entornos.
-Cosecha: tipos antes → después por columna, diff --stat contra develop, confirmación de que no hay más cambios.
+La tabla de entrenamiento escrita por create-training: esquema en DEV (partición 2025-12-30) vs INT (2026-09-14). Tipo exacto de la columna temporal (¿DATE o TIMESTAMP?). Si es TIMESTAMP en alguno: valores distintos de hora+offset (agregado) en cada entorno.
+Config de sesión de los runs: spark.sql.session.timeZone efectivo en el run verde de dev vs el fallido de int (spark confs del clúster del job / metadata del run), y versión de runtime del clúster en ambos.
+El camino de la columna temporal en código: dónde se aplica pd.to_datetime(utc=True), dónde el toPandas, y en qué orden respecto al punto donde MLForecast valida freq="D" con intervalos. ¿El utc=True actúa antes o después de lo que ve MLForecast?
+Veredicto en una línea: por qué dev pasa e int no, con evidencia (fichero:línea o conteo). Si la causa es config de clúster/entorno, dime exactamente qué clave difiere y dónde se define en nuestros recursos de despliegue.
