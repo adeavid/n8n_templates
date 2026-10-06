@@ -44,4 +44,16 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Inventario de dependencias del paquete, solo lectura: (1) lista completa de dependencias Python declaradas (setup/pyproject/requirements) con sus versiones — ¿pinneadas exactas o rangos?; (2) de esas, cuáles vienen preinstaladas en el runtime de Databricks que usan los jobs (mira la versión de runtime en el job) y cuáles se instalan aparte; (3) CÓMO se instalan en los jobs desplegados: ¿el wheel las arrastra, van como libraries del job, de qué índice/repositorio se resuelven (Nexus/mirror)?; (4) cualquier dependencia que venga de fuera del repositorio corporativo o sin versión fijada — lista explícita. Formato tabla: dependencia | versión | origen | cómo llega al cluster.
+Run verde de CASH_SUPPLY_E2E_PYTHON en int (odate=2026-09-15 → partición 2026-09-14). Verifica contra esperado, formato "esperado | obtenido | ✓/✗":
+
+A. El run: estado y duración de cada una de las 5 tareas + total. (Referencia dev: ~52 min con 2.000 oficinas × 4 años; aquí hay menos historia real pero rejilla similar.)
+
+B. Predicciones (partición 2026-09-14): total de filas (espero ~30.940 = 2.210 × 14) · oficinas distintas (2.210) · fechas distintas (14, rango 2026-09-15 a 2026-09-28) · nulos en los 3 modelos (0) · magnitud de los valores (espero cercanos a 0 — forecast de juguete por la historia de un día; repórtame min/max/media por modelo, sin filas).
+
+C. Decisiones: total (espero 2.210) · duplicados por clave (0) · límite inferior aplicado: confirmo que todas usan el fallback del 30% configurado (la tabla de security stock está vacía a propósito) · resumen de flags.
+
+D. Tabla final sanes_modelo_predictivo: filas (espero ≤34 — los pilotos presentes tras el join con arqueos; dime cuántas exactamente) · duplicados (0) · columnas (11) · todas las filas son oficinas piloto.
+
+E. La lectura de gold: confirma en los logs/plan de la tarea expert que leyó pro_common_canales.oficina_operativa.sanes_arqueos con éxito (la prueba empírica del acceso del SP, para la evidencia).
+
+No corrijas ni relances nada; esto es el acta.
