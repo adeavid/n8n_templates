@@ -44,11 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Forense del ValueError de MLForecast en int, SOLO LECTURA, solo agregados. Series afectadas: 0094, 0097, 0100, 0107, 0108, 0109.
+Contexto: el ValueError de MLForecast viene de que las fechas llegan como TIMESTAMP con zona (medianoches UTC → 01:00+01/02:00+02 Madrid) y la validación freq="D" se rompe en los cambios de hora. Hipótesis: la vista de proyección sirve transaction_date como TIMESTAMP mientras el contrato original (y la tabla física de dev) es DATE.
 
-En int_app.delphi.branch_cash_servicing: filas por cada idcent afectado (¿sigue siendo 1?) y su(s) zip_code. Compara con 2-3 oficinas sanas.
-En int_app.delphi.calendar_datagen: para esos zips, ¿cuántas filas por calendar_date? ¿Cuántos country_name distintos tiene cada uno de esos zips? Haz lo mismo para los zips de las oficinas sanas.
-En la tabla de entrenamiento que escribió create-training en int: para los idcents afectados, conteo de filas por fecha (¿duplicadas?) y nº de fechas ausentes en el rango; lo mismo para una oficina sana.
-En el código: el join entre branch y calendario — ¿por qué claves cruza (solo zip+fecha, o también country)? Fichero:línea.
-Además: ¿cómo escribe create-training su tabla de salida — sobrescribe partición o append? (Necesito saber si relanzar el E2E es limpio o acumula.)
-Veredicto en una línea: duplicación por join de calendario / duplicado de origen / huecos reales / otra cosa. No corrijas nada.
+Confirma tipos (solo lectura): tipo de transaction_date, month_date y data_date_part en (a) int_app.delphi.branch_cash_servicing, (b) la vista branch_360_50_projection, (c) la tabla física pre_app.delphi.branch_360_50 de dev (el contrato de referencia); y calendar_date en la vista de calendario vs su físico de dev. Tabla comparativa.
+Si se confirma: rama feature/vistas-cast-date — en el SQL de las vistas de proyección, CAST a DATE de todas las columnas de fecha que el contrato original define como DATE (las que salgan del punto 1, no solo transaction_date — no quiero jugar otra ronda de este juego con month_date). SOLO el SQL de vistas: ni Python, ni configs, ni otros entornos.
+Cosecha: tipos antes → después por columna, diff --stat contra develop, confirmación de que no hay más cambios.
