@@ -44,9 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Diagnóstico cerrado: el fix DST normaliza fechas en predictions.py:486-492 pero el left merge de predictions.py:429 casa claves temporales sin normalizar en una de las patas → las predicciones de LGBM se pierden (NULL) tras el merge.
-
-Rama fix/merge-ds-normalizado desde develop.
-Unifica la normalización temporal en UN punto, ANTES de cualquier merge: las dos patas del merge de :429 (y cualquier otro merge/join temporal del flujo) deben usar exactamente la misma clave normalizada (fecha pura sin zona). Que la normalización ocurra una sola vez, aguas arriba, y todo lo demás la herede — nada de normalizar en un sitio sí y en otro no, que es justo lo que nos ha pasado.
-Amplía el test de caracterización del DST: con la serie que cruza marzo y octubre, el test debe verificar que los TRES modelos devuelven valores NO nulos en la salida final post-merge (no solo que no hay ValueError). Debe fallar con el código actual y pasar con el fix.
-Suite completa verde. Cosecha: diff (fichero:líneas), resultado del test nuevo en rojo-antes/verde-después, y confirmación de que no hay más merges temporales con el mismo riesgo (lista de los que revisaste).
+Cómo selecciona el código la partición de branch_360 (vía las vistas) y de los calendarios? Exacto: (1) el filtro sobre data_date_part — ¿igualdad con odate−1, "última ≤ odate", otra regla? fichero:línea; (2) una vez elegida la partición, ¿qué rango de transaction_date espera dentro (todo el histórico hasta esa fecha)?; (3) ¿en algún sitio se leen VARIAS particiones de branch o calendario a la vez? Solo lectura de código, respuesta con evidencia.
