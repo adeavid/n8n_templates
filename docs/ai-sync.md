@@ -44,7 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Frames de int: en la tabla de entrenamiento y el frame de forecasting (partición 2026-09-14), % de nulos POR COLUMNA — especialmente las features que consume LGBM (lags, ventanas, festivos, seno/coseno). ¿Hay alguna columna totalmente nula o ausente respecto a dev?
-El camino del fix: revisa el diff del fix DST en predictions.py — ¿la normalización de ds afecta a cómo se construyen los lags/features de LGBM? ¿Los tests de caracterización del DST cubren que LGBM produzca VALORES (no solo que no lance el ValueError)? Corre en local la suite del camino LGBM con una serie tipo int (muchos ceros + un valor) y dime si predice números o NaN.
-Lanza el E2E en DEV con los parámetros de siempre (odate=2025-12-31, dev, 14, 7) con el wheel actual. OJO: dev escribe en append (H11) — habrá un tercer lote en predicciones; lo documentamos, no lo limpies ahora.
-Veredicto: ¿LGBM nulo es (a) fix DST, (b) features de int, (c) otra cosa? Con fichero:línea o conteo.
+Diagnóstico cerrado: el fix DST normaliza fechas en predictions.py:486-492 pero el left merge de predictions.py:429 casa claves temporales sin normalizar en una de las patas → las predicciones de LGBM se pierden (NULL) tras el merge.
+
+Rama fix/merge-ds-normalizado desde develop.
+Unifica la normalización temporal en UN punto, ANTES de cualquier merge: las dos patas del merge de :429 (y cualquier otro merge/join temporal del flujo) deben usar exactamente la misma clave normalizada (fecha pura sin zona). Que la normalización ocurra una sola vez, aguas arriba, y todo lo demás la herede — nada de normalizar en un sitio sí y en otro no, que es justo lo que nos ha pasado.
+Amplía el test de caracterización del DST: con la serie que cruza marzo y octubre, el test debe verificar que los TRES modelos devuelven valores NO nulos en la salida final post-merge (no solo que no hay ValueError). Debe fallar con el código actual y pasar con el fix.
+Suite completa verde. Cosecha: diff (fichero:líneas), resultado del test nuevo en rojo-antes/verde-después, y confirmación de que no hay más merges temporales con el mismo riesgo (lista de los que revisaste).
