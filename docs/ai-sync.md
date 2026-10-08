@@ -44,4 +44,12 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Cómo selecciona el código la partición de branch_360 (vía las vistas) y de los calendarios? Exacto: (1) el filtro sobre data_date_part — ¿igualdad con odate−1, "última ≤ odate", otra regla? fichero:línea; (2) una vez elegida la partición, ¿qué rango de transaction_date espera dentro (todo el histórico hasta esa fecha)?; (3) ¿en algún sitio se leen VARIAS particiones de branch o calendario a la vez? Solo lectura de código, respuesta con evidencia.
+Contexto: contrato de ingesta cerrado con el equipo de datos. Calendario (calendar_datagen): ingesta MENSUAL solo-hacia-adelante (cada partición trae ~2 meses desde su fecha de ingesta; las particiones históricas hasta 2022 las están reprocesando igual, mes a mes). Branch: diaria, data_date_part = transaction_date, un día por partición sin repetir. Rama feature/lecturas-contrato-ingesta desde develop, con DOS subtareas:
+
+A. Calendario en training (la crítica): sustituir la lectura por última-partición por lectura por rango de particiones: data_date_part entre start_date y reference_date. Como las particiones mensuales se solapan (~1 mes repetido entre consecutivas), hay que deduplicar siendo conscientes del leakage: para cada (zip, country, calendar_date), quedarse con la fila de la partición más reciente que sea ≤ esa calendar_date (la foto que se conocía en ese momento — acordado con negocio). La INFERENCIA no se toca: sigue con la última partición.
+
+B. Branch: añadir filtro de partición en las lecturas de training y forecasting: data_date_part en [start_date, odate] además del filtro actual de transaction_date (cinturón y tirantes, acordado con plataforma). También en get_all_branches, que hoy lee la tabla entera sin filtro.
+
+Tests: caracterización de A con un mini-escenario de 3 particiones mensuales solapadas verificando (1) que el histórico completo se reconstruye, (2) que ante un festivo que CAMBIA entre particiones se usa la foto anterior a la fecha (anti-leakage), (3) que no hay duplicados tras el dedup. Para B, test de que las particiones fuera de rango no se leen. Suite completa verde. H5b: ni una clave de config renombrada.
+
+Cosecha: diff por fichero, resultado de tests nuevos y suite, y lista de cualquier OTRO lector de calendario o branch que NO hayas tocado (el ad-hoc de festivos, holidays.py con su fallback MAX, security_stock.py) — listar, no cambiar.
