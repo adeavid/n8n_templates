@@ -44,8 +44,11 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Rama feature/naming-hardcodes desde develop actualizado (con las lecturas ya mergeadas). Refactor de higiene SIN cambio de comportamiento:
+Quiero la foto exacta de a qué apunta cada entrada del runtime, en código y en catálogo:
 
-Unificar naming interno: donde el código llama branch_id a la columna que en los datos es idcent, alinear la nomenclatura interna para eliminar la confusión (variables, parámetros y comentarios). OJO: NO renombres claves de configuración (H5b), NO renombres columnas de tablas ni esquemas — solo nombres internos del código.
-Eliminar los defaults hardcodeados de nombres de tabla en los dataclasses/clases de dataset (los que el config file siempre pisa): o quitarlos haciendo el parámetro obligatorio con error claro si falta, o dejarlos como None con validación — lo que sea más coherente con el loader actual. Que nunca más un nombre de tabla viva escondido en el código.
-Suite completa verde — es un refactor: cero tests nuevos de lógica, pero si algún test referencia los nombres viejos, se actualiza.
+En develop actual: para cada nombre de tabla de entrada que resuelve el runtime (branch_360_50 y los tres calendarios — oficina, nacional, local), ¿qué VALOR tiene en la config de cada entorno (dev, int)? Tabla: entrada | valor en dev | valor en int.
+En el catálogo: para cada uno de esos valores, ¿el objeto es una VISTA (de proyección) o una TABLA física? Verifica en pre_app.delphi y en int_app.delphi (DESCRIBE EXTENDED o information_schema). Marca cualquier entrada que apunte a una tabla CRUDA (branch_cash_servicing o calendar_datagen directas) en vez de a su vista.
+Arqueología reciente: git log de los ficheros de config (config.yaml, global_environment_variables, properties) desde el 7-oct — ¿alguien (yo, Agustín, cualquier rama mergeada) cambió apuntamientos de calendario o branch? Commit, autor, qué cambió.
+Veredicto en una línea por entorno: "APUNTAMIENTOS CORRECTOS (todo a vistas)" o "DESVIACIÓN: X apunta a crudo desde el commit Y".
+
+No corrijas nada — repórtame y decido.
