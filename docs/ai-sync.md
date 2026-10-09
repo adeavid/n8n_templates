@@ -44,11 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Confirmado el diagnóstico — gracias por frenar. Procedemos creando el mecanismo, imitando el patrón existente:
-
-Rama feature/ddl-security-stock desde develop.
-Crea un job DDL_STRUCTURES_SQL siguiendo EXACTAMENTE el mismo patrón que PROJECTION_VIEWS_SQL (notebook SQL parametrizado por entorno + plantilla job_sql, mismo estilo de widgets/parámetros) — es el patrón delphi-models que ya usamos, no inventes otro.
-Contenido del notebook: SOLO DDLs estructurales de zona privada: el CREATE TABLE IF NOT EXISTS de security_stock (esquema validado: idcent STRING, security_stock DOUBLE, data_date_part DATE, Delta, particionada). Idempotente — en int la tabla ya existe y NO debe tocarla.
-Wiring en install.sh: ejecútalo junto a PROJECTION_VIEWS_SQL, con el mismo tratamiento (si las vistas son no-bloqueantes, este igual).
-IMPORTANTE — el DDL de la tabla final NO entra en este job: en pro esa tabla es zona GOBERNADA (la creó Admin Big Data vía CDO; nuestro SP ni puede ni debe crearla) y en dev/int se auto-crea al escribir. El job nuevo es exclusivamente para estructuras de zona privada que nadie escribe. Deja un comentario en el notebook explicando esa frontera.
-Cosecha: ficheros nuevos, diff de install.sh, confirmación de idempotencia (qué pasa si la tabla ya existe), y que Python sigue intacto.
+En la PR (o git diff develop...feature/ddl-security-stock --stat): que el diff contenga SOLO el notebook ddl_structures.sql, las 4 plantillas JSON y el install.sh. Ni una línea de Python. Si aparece algo más, fuera antes de mergear.
