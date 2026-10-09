@@ -44,13 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Contexto: CDO validó el CREATE definitivo de la tabla final (te lo adjunto — es el contrato oficial; la tabla ya existe en pro con ese esquema exacto). En la validación un campo quedó como totalamount (sin guion bajo) mientras nuestro código y DDL dicen total_amount. Hay que alinear NUESTRO lado al contrato, no al revés. Rama feature/contrato-cdo-tabla-final desde develop actualizado:
-
-Diff de contrato completo: compara columna a columna (nombre, tipo, orden) nuestro DDL de resources (sanes_modelo_predictivo.sql) contra el CREATE validado adjunto. Lista TODAS las diferencias, no solo totalamount — si CDO cambió algo más en la validación, quiero verlo ahora y no en el primer insert de pro.
-Alinear el DDL de resources al contrato validado, exacto.
-Alinear la escritura: en el código del expert que escribe la tabla final, ajusta el mapeo de columnas de salida a los nombres validados. OJO: solo los nombres de SALIDA de esta tabla — ni claves de config (H5b), ni columnas de entrada, ni otras tablas.
-Tests: actualiza cualquier test que referencie los nombres viejos de salida; si hay test de esquema de la tabla final, que valide contra el contrato nuevo.
-Las tablas ya creadas en dev e int (pre_app.delphi e int_app.delphi) tienen el esquema viejo: propón el plan de migración — recomiendo DROP + CREATE con el DDL nuevo vía el mecanismo de DDL del despliegue (los datos son de prueba, 11 filas, desechables), pero dime si hay razón para ALTER RENAME en su lugar. NO lo ejecutes: plan solamente.
-Suite completa verde.
-
-Cosecha: el diff de contrato del punto 1 (tabla: columna | nuestro | CDO | acción), ficheros tocados, resultado de suite, y el plan de migración del punto 5.
+Rama feature/ddl-security-stock desde develop. Añade a resources el DDL estructural de la tabla de security stock, con el mismo mecanismo que el DDL de la tabla final: CREATE TABLE IF NOT EXISTS ${target_catalog}/${target_schema}.security_stock_branches_cash_estimation_50 (idcent STRING, security_stock DOUBLE, data_date_part DATE) USING DELTA PARTITIONED BY (data_date_part) — el esquema exacto que validamos en int. Que se ejecute en el install de cada entorno (idempotente: IF NOT EXISTS, no pisa la de int que ya existe). Cosecha: fichero nuevo, wiring del install, confirmación de idempotencia, y que NO toca nada de Python.
