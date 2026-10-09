@@ -44,11 +44,27 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Quiero la foto exacta de a qué apunta cada entrada del runtime, en código y en catálogo:
+Sobre la rama feature/naming-hardcodes: en el diff, ¿se modificó algún literal de string “branch_id”/”idcent” usado como nombre de columna (en select, withColumn, join, rename, esquemas de DataFrames intermedios, o el mapeo a unique_id de MLForecast)? Lista cada literal tocado con fichero:línea y clasifícalo: (a) columna interna creada y consumida dentro del código — renombrada consistentemente en TODOS sus puntos de uso, o (b) columna de contrato externo (tablas, vistas, salidas) — que NO debe haberse tocado. Si todo son identificadores Python puros sin literales, dilo y listo.
 
-En develop actual: para cada nombre de tabla de entrada que resuelve el runtime (branch_360_50 y los tres calendarios — oficina, nacional, local), ¿qué VALOR tiene en la config de cada entorno (dev, int)? Tabla: entrada | valor en dev | valor en int.
-En el catálogo: para cada uno de esos valores, ¿el objeto es una VISTA (de proyección) o una TABLA física? Verifica en pre_app.delphi y en int_app.delphi (DESCRIBE EXTENDED o information_schema). Marca cualquier entrada que apunte a una tabla CRUDA (branch_cash_servicing o calendar_datagen directas) en vez de a su vista.
-Arqueología reciente: git log de los ficheros de config (config.yaml, global_environment_variables, properties) desde el 7-oct — ¿alguien (yo, Agustín, cualquier rama mergeada) cambió apuntamientos de calendario o branch? Commit, autor, qué cambió.
-Veredicto en una línea por entorno: "APUNTAMIENTOS CORRECTOS (todo a vistas)" o "DESVIACIÓN: X apunta a crudo desde el commit Y".
+Run verde de CASH_SUPPLY_E2E_PYTHON en dev (odate=2025-12-31 → partición 2025-12-30). SOLO LECTURA, solo agregados, formato “esperado | obtenido | ✓/✗”:
 
-No corrijas nada — repórtame y decido.
+A. El run: estado y duración de las 5 tareas + total (referencia: ~49-52 min).
+
+B. Predicciones (partición 2025-12-30) — el certificado del fix:
+
+Lotes por prediction_datetime (espero 4 — los 3 históricos + el de hoy) con filas por lote.
+EN EL LOTE DE HOY: nulos por modelo — espero 0 en los TRES, LGBM incluido (el síntoma estrella; si LGBM trae un solo nulo, el fix no certificó).
+En el lote de hoy: min/max/media por modelo (valores reales), 2.000 oficinas, 14 fechas, rango 2026-01-01 a 2026-01-14.
+Comparativa con el lote del 5-oct (el último sano pre-bug): ¿los valores de hoy son equivalentes a los de aquel lote (misma siembra, mismos modelos)? Diff agregado por modelo. Esto verifica que las lecturas nuevas no alteraron los DATOS de entrada — espero diferencias ~0.
+
+C. Decisiones: 2.000 filas, 0 duplicados, 200 canarios presentes, flags (espero 0 — canarios en rango), límite inferior aplicado (espero el 30% de siempre).
+
+D. Tabla final: 11 filas (piloto∩arqueos), 11 columnas, 0 duplicados.
+
+E. Las lecturas nuevas en acción — el certificado de la rama:
+
+¿El calendario del training se leyó por RANGO? Confirma en logs/plan que entraron las DOS particiones de la siembra (2025-12-30 y 31) con su dedup, no solo la última.
+¿Los filtros de partición de branch actuaron? Evidencia de partition pruning en el plan de lectura o conteo de particiones leídas vs totales.
+Festivos del horizonte presentes (>0 — el check H10 de rigor).
+
+No modifiques ni relances nada. Si algo sale ✗, repórtalo tal cual y paro yo.
