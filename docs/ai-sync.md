@@ -44,4 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-¿el writer escribe con overwrite+overwriteSchema (y entonces NO hace falta DROP — el propio E2E migra el esquema), o hace falta DROP explícito? Si hace falta: propón vía con identidad SP (job puntual tipo seed, o paso one-off), sin ejecutar nada.”
+Descartamos el job one-off: la migración entra en DDL_STRUCTURES_SQL, que es su sitio natural, con guarda auto-extinguible. En la rama del DDL (o follow-up pequeño si ya mergeó):
+
+Añade al notebook una sección de migraciones separada de los CREATE, con comentario de cabecera explicando el patrón: “migraciones guardadas y auto-extinguibles; cada una comprueba si aplica y se vuelve no-op cuando el esquema ya está alineado”.
+Migración 001: si sanes_modelo_predictivo existe en el esquema del entorno Y contiene la columna total_amount (marcador del esquema pre-contrato) → DROP TABLE (el writer la recrea con el contrato de 13 columnas en el siguiente run). Si no existe o ya tiene totalamount → no-op. Usa una celda con la lógica de comprobación (information_schema o DESCRIBE) — nada de DROP incondicional, JAMÁS, en un job recurrente.
+Verifica los tres caminos en seco (sin ejecutar contra Databricks): tabla con esquema viejo → dropea; tabla con esquema nuevo → no-op; tabla inexistente → no-op.
+Esto solo aplica a zona privada: comenta explícitamente que pro queda fuera (tabla gobernada, nacida con el contrato).
+Commit por paso. Cosecha: diff del notebook, la lógica de la guarda, y confirmación de idempotencia post-migración.
