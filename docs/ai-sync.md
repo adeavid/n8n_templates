@@ -44,4 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-En la PR (o git diff develop...feature/ddl-security-stock --stat): que el diff contenga SOLO el notebook ddl_structures.sql, las 4 plantillas JSON y el install.sh. Ni una línea de Python. Si aparece algo más, fuera antes de mergear.
+Primer acto: crea feature/contrato-cdo-tabla-final desde develop actualizado y haz commit inicial. A partir de ahí, commit tras cada paso. Nunca dejes trabajo sin commit.
+Re-aplica el parche que ya diseñaste: rename total_amount→totalamount en el DDL de resources y en el writer, y la corrección de que el writer emita is_feasible y coste_estimado.
+Pregunta clave que necesito respondida en la cosecha: cuando el writer emite is_feasible y coste_estimado, ¿los está rellenando con valores REALES propagados desde el GA (la factibilidad y el coste que calcula el optimizador) o con nulos/placeholder? Dime exactamente de dónde salen los valores (fichero:línea). Si son reales, la historia de “propagar feasibility” queda cubierta aquí y me lo dices; si son nulos, lo dices igual y NO lo inventes — la propagación real será la siguiente rama.
+Re-valida: tests focalizados + suite completa.
+Cosecha: commits hechos (hashes), diff, respuesta del punto 3, suite, y el plan de migración confirmado (DROP en dev/int + recreación por auto-create del writer + DESCRIBE de verificación — sin ejecutarlo).
