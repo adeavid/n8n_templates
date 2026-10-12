@@ -44,7 +44,19 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Por lote: filas y nulos de LGBM por prediction_datetime en la partición 2025-12-30. Espero: lote de hoy = 28.000 filas, 0 nulos en los 3 modelos; los 28.000 nulos de LGBM concentrados en el lote del 6-oct.
-La cadena de is_feasible/coste_estimado: (a) ¿la tabla de DECISIONES que escribió optimize HOY contiene esos campos? DESCRIBE + conteo de no-nulos. (b) ¿De dónde lee el writer del expert los dos valores — del dataframe en memoria o de la tabla de decisiones persistida? fichero:línea. (c) ¿Está disparando el camino de “nulls tipados por fuente sin campos”? Confirma mi hipótesis o mátala: la propagación llega hasta la SALIDA de optimize pero no sobrevive a la PERSISTENCIA entre tareas.
-Festivos, bien medido: sobre la tabla de entrenamiento escrita HOY y el lote de predicciones de HOY — conteo de filas con festivo (oficina/local/nacional). El horizonte incluye Año Nuevo y Reyes: nacional ≥ 2 obligatorio. Si de verdad es 0, diff de qué cambió en el camino del calendario entre el run del 9-oct y este (¿naming? ¿start_date wiring?).
-Aclárame la nota críptica de E: “task parametrizada con job.parameters.start-date PENDIENTE” — ¿el parámetro llegó al task o no? ¿Con qué start_date efectivo corrió el training?
+rama fix/cadena-persistencia-y-calendario-dev desde develop. Commit+push tras cada paso. Tres fixes:
+
+A. Persistir is_feasible y coste_estimado en la tabla de decisiones (el principal):
+
+Añade los 2 campos a la proyección de la persistencia de optimize (spark.py) y al esquema de la tabla de decisiones.
+Migración guardada 002 en DDL_STRUCTURES: si la tabla de decisiones existe SIN esos campos → ALTER TABLE ADD COLUMNS (aditivo, nada de DROP — esa tabla tiene consumidores futuros); con los campos → no-op. Mismo patrón auto-extinguible que la 001, celda %python PRIMERA línea (la lección de ayer).
+El test que faltaba y que es la lección de este bug: test de cadena de persistencia — optimize escribe → se relee la tabla → los 2 campos presentes y con valores del GA. Validar el dato al FINAL del viaje entre tareas, no en memoria.
+
+B. El calendario de dev (festivos a 0):
+4. Corrige el tipo de data_date_part en la vista/siembra de calend_lab_nac_50 de dev (STRING → DATE), por la vía que corresponda (ajustar la siembra/DDL de la vista y recrearla con la identidad correcta). Verifica si calend_lab_loc_50 tiene el mismo problema.
+5. En la resolución de particiones del calendario: añade una validación de tipo que falle ALTO (error claro) si data_date_part no es DATE — que el “empty or outdated” deje de ser un susurro. No cambies la lógica, solo conviértela en honesta.
+
+C. El drift del template:
+6. Alinea el template local del job con la sintaxis desplegada que FUNCIONA (job.parameters.start_date) — verifica contra la doc del formato correcto y deja template y job idénticos.
+
+Suite completa verde. Cosecha: diff por fix, el test de cadena rojo-antes/verde-después, y confirmación de que la migración 002 pasa los tres caminos en seco.
