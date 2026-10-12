@@ -44,12 +44,7 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Run verde en dev (odate=2025-12-31 → partición 2025-12-30). SOLO LECTURA, formato esperado|obtenido|✓/✗:
-
-A. Run: 5 tareas + duración total (referencia 45:19 del run anterior).
-B. Migración (el estreno): ¿sanes_modelo_predictivo fue DROPEADA por DDL_STRUCTURES y RECREADA por el writer? DESCRIBE: 13 columnas, con totalamount (no total_amount), is_feasible INT, coste_estimado DECIMAL(17,2), tipos y orden del contrato CDO.
-C. Las columnas nuevas (el otro estreno): en las filas escritas hoy — is_feasible: distribución de 0/1 (espero mayoría 1, coherente con el GA); coste_estimado: min/max/media, > 0 donde hay movimiento, coherente con los importes. % de nulos en ambas (espero 0 en filas con decisión).
-D. Lo de siempre: predicciones del lote nuevo (28.000, 0 nulos en los 3 modelos — que el batch no haya roto el fix), decisiones (2.000, canarios, flags 0), filas de la final (11), festivos > 0.
-E. start_date: confirma en los logs/parámetros del run que usó el default 2022-01-01 y la ventana es IDÉNTICA a la del run anterior (el “default no cambia comportamiento” verificado en producción de verdad).
-
-Si algo sale ✗, repórtalo y para.
+Por lote: filas y nulos de LGBM por prediction_datetime en la partición 2025-12-30. Espero: lote de hoy = 28.000 filas, 0 nulos en los 3 modelos; los 28.000 nulos de LGBM concentrados en el lote del 6-oct.
+La cadena de is_feasible/coste_estimado: (a) ¿la tabla de DECISIONES que escribió optimize HOY contiene esos campos? DESCRIBE + conteo de no-nulos. (b) ¿De dónde lee el writer del expert los dos valores — del dataframe en memoria o de la tabla de decisiones persistida? fichero:línea. (c) ¿Está disparando el camino de “nulls tipados por fuente sin campos”? Confirma mi hipótesis o mátala: la propagación llega hasta la SALIDA de optimize pero no sobrevive a la PERSISTENCIA entre tareas.
+Festivos, bien medido: sobre la tabla de entrenamiento escrita HOY y el lote de predicciones de HOY — conteo de filas con festivo (oficina/local/nacional). El horizonte incluye Año Nuevo y Reyes: nacional ≥ 2 obligatorio. Si de verdad es 0, diff de qué cambió en el camino del calendario entre el run del 9-oct y este (¿naming? ¿start_date wiring?).
+Aclárame la nota críptica de E: “task parametrizada con job.parameters.start-date PENDIENTE” — ¿el parámetro llegó al task o no? ¿Con qué start_date efectivo corrió el training?
