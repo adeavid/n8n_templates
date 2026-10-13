@@ -44,20 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-SOLO LECTURA, formato esperado|obtenido|✓/✗. Contexto: run de mecánica/contrato — forecast de juguete esperado; los warnings de utilities/fallback y de festivos son CONOCIDOS (H14, fix en vuelo): lístalos pero márcalos “esperado”, no como fallo.
-
-A. Run: 5 tareas + duraciones + total (referencia: ~18 min del run mecánico anterior).
-
-B. La migración en int (estreno): DESCRIBE de int_app.delphi.sanes_modelo_predictivo — ¿recreada con 13 columnas del contrato (totalamount, is_feasible INT, coste_estimado DECIMAL)? ¿Y decisiones con is_feasible + transport_cost (migración 002)? ¿La de security_stock intacta?
-
-C. La cadena en su segundo entorno: en las decisiones de hoy: filas (~2.210), duplicados (0), is_feasible con 0/1, transport_cost con valores. En la tabla final: filas, is_feasible/coste_estimado/totalamount poblados (valores de juguete, pero NO nulos).
-
-D. ⭐ LA LECTURA DE GOLD (el pendiente de dos semanas): en los logs/plan de la tarea expert — ¿ejecutó la lectura de pro_common_canales.oficina_operativa.sanes_arqueos? Tres desenlaces posibles, dime cuál: (1) leyó con éxito → cuántas filas trajo y cuántas oficinas del piloto casaron en el join; (2) PERMISSION_DENIED → el error LITERAL completo con la identidad que lo recibió; (3) ni llegó a intentarlo → en qué línea retornó antes y por qué.
-
-E. Predicciones del lote de hoy: 2.210 × 14 = 30.940 filas, 0 nulos en los 3 modelos, magnitudes (juguete: mayoría ~0 con ecos del día real).
-
-F. El zip en acción: ¿las vistas sirvieron sin error y algún camino usa ya el zip_code (el cruce oficina-calendario)? Evidencia breve.
-
-G. Logs de las 5 tareas: lista completa de warnings/errores, separando “esperados” (utilities/fallback/festivos — H14) de cualquier cosa NUEVA.
-
-Si algo inesperado sale ✗, repórtalo y para.
+Cosecha focalizada del E2E dev post-utilities, solo lectura: (1) Logs: los warnings “utilities not available”, “fallback partition”, “falling back to native Spark”, “National holiday table empty” y “Local holiday incomplete” deben haber DESAPARECIDO los cinco — lista lo que quede. (2) La partición de predicciones (2025-12-30): con la escritura idempotente nueva, debe haber quedado UN solo lote (el de hoy, 28.000) — los 4 fósiles del append, barridos por el replace. Confírmalo por prediction_datetime. (3) Festivos en el camino del optimizador: working_days_to_trip de 3-4 oficinas contrastado con el calendario (Año Nuevo y Reyes descontados por fin). (4) Lo de siempre en exprés: 5/5, conteos, cadena is_feasible/coste, 0 nulos en modelos. (5) Y de paso: ¿en dev también se pierde una oficina entre predicciones y decisiones (como el 2.209/2.210 de int)? Si sí, cuál es el filtro.
