@@ -44,20 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-rama fix/eliminar-dependencia-utilities desde develop. Commit+push por paso.
-
-Contexto: utilities.spark_utils nunca se instala (pip en runtime contra ruta inaccesible) y todo corre en fallbacks — incluido el fallback de escritura que causa el append (H11). Para la V1, eliminamos la dependencia rota y hacemos oficiales los caminos propios:
-
-0. Materialidad primero (solo lectura): ¿optimize usa festivos (vía holidays.py) para working_days_to_trip? Compara working_days de 2-3 oficinas del run de hoy contra el calendario real del horizonte (hay Año Nuevo y Reyes). Repórtalo ANTES de tocar nada — necesito saber si las decisiones actuales están contando festivos como hábiles.
-
-1. Inventario: todos los usos de utilities.spark_utils (f_df_ultima_particion_anterior, f_guarda_df, f_guarda_particion, f_existe_df) y los tres bloques de pip-en-runtime (forecasting/_utils.py, holidays.py, send_email_notification.py).
-
-2. Resolución de particiones: los lectores de holidays.py (y cualquier otro) pasan a usar la misma lógica de resolución que ya tiene el repo (la de la rama de lecturas) — extráela a un helper compartido si no lo está. Fuera el fallback “reference_date as partition”.
-
-3. Escritura — aquí matamos H11 a propósito: implementa los equivalentes nativos explícitos: escribir partición = replaceWhere sobre la partición (idempotente), existencia = chequeo nativo. Elimina el fallback append. OJO: esto CAMBIA la semántica en dev (antes acumulaba lotes) — es deliberado y deseado; el próximo run limpiará la partición de fósiles él solo.
-
-4. Fuera los pip de runtime: elimina los tres bloques de instalación en caliente. Ningún código instala paquetes en ejecución.
-
-5. Tests: (a) idempotencia de escritura — dos escrituras a la misma partición dejan UN lote (el test que H11 siempre mereció); (b) resolución de festivos de holidays.py con fixture multi-partición (el mismo estilo que los de lecturas); (c) suite completa.
-
-6. Cosecha: materialidad del punto 0, inventario, diff, tests rojo-antes/verde-después donde aplique, y la lista de warnings que deben DESAPARECER en el próximo run (“utilities not available”, “fallback partition”, festivos empty).
+Desde la sesión de int, SOLO LECTURA: (1) particiones de int_app.delphi.branch_cash_servicing (data_date_part + filas por partición, orden descendente); (2) particiones de int_app.delphi.calendar_datagen; (3) con eso, proponme el odate para el E2E (= última partición de branch + 1 día) y verifica que existe partición de calendario estrictamente anterior a ese odate−1 (regla H10). (4) Confirma también que las columnas de ambas tablas siguen cumpliendo el contrato de las vistas tras la recarga de Agustín (el zip_code nuevo incluido). Respuesta: tabla de particiones + “odate recomendado: X” + check de calendario ✓/✗.
