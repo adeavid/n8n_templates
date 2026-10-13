@@ -44,10 +44,20 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-SOLO LECTURA. Tres frentes:
+rama fix/eliminar-dependencia-utilities desde develop. Commit+push por paso.
 
-1. El wheel de utilities (el principal): (a) ¿DÓNDE se referencia utilities-latest-py3-none-any.whl — libraries del job, requirements, plantilla? Valor literal y fichero. (b) ¿Qué ES utilities.spark_utils — la librería de utilidades de plataforma/delphi-models? ¿Qué funciones aporta (la resolución de particiones buena)? (c) ¿Desde cuándo falla? Mira los logs de instalación de los runs del 5-oct y 9-oct: ¿el mismo error? (d) ¿La ruta apunta a un volumen/path que no existe o es el Errno 13 de permisos? NO lo arregles — esto se decide con plataforma.
+Contexto: utilities.spark_utils nunca se instala (pip en runtime contra ruta inaccesible) y todo corre en fallbacks — incluido el fallback de escritura que causa el append (H11). Para la V1, eliminamos la dependencia rota y hacemos oficiales los caminos propios:
 
-2. La cadena transport_cost → coste_estimado: ¿el expert lee transport_cost de decisiones y lo escribe como coste_estimado en la final? fichero:línea del mapeo. Si es así, mi expectativa estaba mal y la cadena es correcta — confírmalo.
+0. Materialidad primero (solo lectura): ¿optimize usa festivos (vía holidays.py) para working_days_to_trip? Compara working_days de 2-3 oficinas del run de hoy contra el calendario real del horizonte (hay Año Nuevo y Reyes). Repórtalo ANTES de tocar nada — necesito saber si las decisiones actuales están contando festivos como hábiles.
 
-3. Cuando SQL_DELPHI_PRE esté RUNNING, completa los N/M: métricas de decisiones (2.000, is_feasible 0/1, transport_cost >0), valores de la tabla final (is_feasible, coste_estimado, totalamount poblados), predicciones del lote de hoy (28.000, 0 nulos, magnitudes), canarios y duplicados. Y el DESCRIBE que confirme el efecto de las guardas.
+1. Inventario: todos los usos de utilities.spark_utils (f_df_ultima_particion_anterior, f_guarda_df, f_guarda_particion, f_existe_df) y los tres bloques de pip-en-runtime (forecasting/_utils.py, holidays.py, send_email_notification.py).
+
+2. Resolución de particiones: los lectores de holidays.py (y cualquier otro) pasan a usar la misma lógica de resolución que ya tiene el repo (la de la rama de lecturas) — extráela a un helper compartido si no lo está. Fuera el fallback “reference_date as partition”.
+
+3. Escritura — aquí matamos H11 a propósito: implementa los equivalentes nativos explícitos: escribir partición = replaceWhere sobre la partición (idempotente), existencia = chequeo nativo. Elimina el fallback append. OJO: esto CAMBIA la semántica en dev (antes acumulaba lotes) — es deliberado y deseado; el próximo run limpiará la partición de fósiles él solo.
+
+4. Fuera los pip de runtime: elimina los tres bloques de instalación en caliente. Ningún código instala paquetes en ejecución.
+
+5. Tests: (a) idempotencia de escritura — dos escrituras a la misma partición dejan UN lote (el test que H11 siempre mereció); (b) resolución de festivos de holidays.py con fixture multi-partición (el mismo estilo que los de lecturas); (c) suite completa.
+
+6. Cosecha: materialidad del punto 0, inventario, diff, tests rojo-antes/verde-después donde aplique, y la lista de warnings que deben DESAPARECER en el próximo run (“utilities not available”, “fallback partition”, festivos empty).
