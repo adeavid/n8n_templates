@@ -44,19 +44,25 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-rama fix/cadena-persistencia-y-calendario-dev desde develop. Commit+push tras cada paso. Tres fixes:
+Run verde en dev (odate=2025-12-31 → partición 2025-12-30). SOLO LECTURA, formato esperado|obtenido|✓/✗. REGLAS FIJAS: en predicciones, TODO medido sobre el lote de HOY por prediction_datetime; e incluye al final la sección de logs.
 
-A. Persistir is_feasible y coste_estimado en la tabla de decisiones (el principal):
+A. Run: 5 tareas + duraciones (referencia 45-49 min).
 
-Añade los 2 campos a la proyección de la persistencia de optimize (spark.py) y al esquema de la tabla de decisiones.
-Migración guardada 002 en DDL_STRUCTURES: si la tabla de decisiones existe SIN esos campos → ALTER TABLE ADD COLUMNS (aditivo, nada de DROP — esa tabla tiene consumidores futuros); con los campos → no-op. Mismo patrón auto-extinguible que la 001, celda %python PRIMERA línea (la lección de ayer).
-El test que faltaba y que es la lección de este bug: test de cadena de persistencia — optimize escribe → se relee la tabla → los 2 campos presentes y con valores del GA. Validar el dato al FINAL del viaje entre tareas, no en memoria.
+B. Jobs del install: DDL_STRUCTURES — ¿la migración 002 disparó (ALTER ADD COLUMNS en decisiones) y la 001 quedó en no-op (la tabla final ya tiene el esquema nuevo)? Evidencia del log de cada guarda.
 
-B. El calendario de dev (festivos a 0):
-4. Corrige el tipo de data_date_part en la vista/siembra de calend_lab_nac_50 de dev (STRING → DATE), por la vía que corresponda (ajustar la siembra/DDL de la vista y recrearla con la identidad correcta). Verifica si calend_lab_loc_50 tiene el mismo problema.
-5. En la resolución de particiones del calendario: añade una validación de tipo que falle ALTO (error claro) si data_date_part no es DATE — que el “empty or outdated” deje de ser un susurro. No cambies la lógica, solo conviértela en honesta.
+C. La cadena, certificada en la tabla de DECISIONES (el fix principal): DESCRIBE de cash_supply_optimization: ¿existen ya is_feasible y coste_estimado? En las 2.000 filas de hoy: distribución de is_feasible (0/1, espero mayoría 1), coste_estimado min/max/media (>0 donde hay movimiento), % nulos (~0).
 
-C. El drift del template:
-6. Alinea el template local del job con la sintaxis desplegada que FUNCIONA (job.parameters.start_date) — verifica contra la doc del formato correcto y deja template y job idénticos.
+D. Tabla final: 13 columnas contrato CDO · en las ~11 filas: is_feasible con 0/1 REALES (ya no 11/11 nulos), coste_estimado con valores, totalamount poblado.
 
+E. Festivos (el fix B — el otro estreno): en el training de hoy: conteos oficina/local/nacional — todos > 0 (referencia sana: ~6.000/4.000/2+). En el lote de forecasting de hoy: flag nacional en Año Nuevo y Reyes — espero ~2.000 filas marcadas por cada fecha (todas las oficinas). Si algo sigue a 0 → ✗ y para.
+
+F. Predicciones del lote de HOY: 28.000 filas, 0 nulos en los 3 modelos, min/max/media por modelo. OJO — AVISO IMPORTANTE: los valores YA NO deben coincidir con el lote de referencia del 5-oct — con los festivos por fin presentes en las features, los modelos predicen distinto, y eso es lo CORRECTO. No reportes la divergencia como fallo: repórtala como magnitud (diff agregado por modelo) para documentar el efecto del fix de festivos.
+
+G. Decisiones — lo de siempre: 2.000, 0 duplicados, 200 canarios, flags (espero 0, canarios en rango).
+
+H. Logs de las 5 tareas (la regla nueva): lista TODOS los warnings/errores. En particular: “National holiday table is empty or outdated” y “Local holiday data incomplete” deben haber DESAPARECIDO; la validación de tipo nueva no debe haber saltado. Cualquier warning nuevo, lístalo tal cual.
+
+I. start_date: valor efectivo del run (espero default 2022-01-01) y confirmación de que template y job desplegado ya dicen lo mismo.
+
+Si algo sale ✗, repórtalo y para — no corrijas nada.
 Suite completa verde. Cosecha: diff por fix, el test de cadena rojo-antes/verde-después, y confirmación de que la migración 002 pasa los tres caminos en seco.
