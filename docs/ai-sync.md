@@ -44,10 +44,11 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Bien parado. Ahora tres cosas, SOLO LECTURA:
+rama fix/lectores-festivos-fqn desde develop. Commit+push por paso.
 
-1. Completa el resto de la cosecha (lo frenado no invalida lo demás): (a) la partición de predicciones 2025-12-30 por prediction_datetime — con la escritura idempotente nueva espero UN solo lote de 28.000 (los 4 fósiles barridos por el replace); (b) conteos exprés: decisiones, cadena is_feasible/transport_cost, 0 nulos en los 3 modelos; (c) ¿en dev también se pierde una oficina entre predicciones y decisiones (el 2.209/2.210 de int)? ¿Cuál filtro la quita?
+Causa confirmada: los lectores de festivos (optimize/expert y las features de forecasting) consultan calend_lab_nac_50/calend_lab_loc_50 por nombre corto sin resolver, y un except Exception amplio traga el error y lo convierte en “empty or outdated”.
 
-2. Forense del warning superviviente: los lectores de festivos de OPTIMIZE y EXPERT, tal como quedaron tras el fix de utilities — (a) ¿qué función usan ahora, qué tabla/vista consultan y con qué filtros (fichero:línea)? (b) Ejecuta tú esa misma consulta contra los datos de dev: ¿qué devuelve y por qué vacío, si calend_lab_nac tiene Año Nuevo y Reyes? (c) ¿Es el MISMO lector que usa el training (que funciona) o un camino distinto? Si es distinto, ¿en qué difiere exactamente?
-
-3. La materialidad que quedó pendiente del punto 0 (nunca me llegó): ¿working_days_to_trip consume los festivos de ESE lector? Valores de 3-4 oficinas del run de hoy contrastados con el calendario real del horizonte (Año Nuevo y Reyes deberían descontar días). Veredicto: “los festivos vacíos SÍ/NO afectan a las decisiones, y en cuánto”.
+Resolución de nombres: esos lectores pasan a resolver la tabla por la MISMA vía que el resto del código (resolve_table_name()/la config de PersistenceConfig) — nada de nombres cortos sueltos. Verifica los TRES consumidores: working_days del optimize, el expert, y las holiday-features del dataset de forecasting.
+El except mentiroso, fuera: sustituye el except Exception amplio por manejo honesto — el error real se loguea COMPLETO y la lectura de festivos irresoluble FALLA ALTO (o como mínimo warning con la excepción literal). Un calendario que no se encuentra no es “vacío”: es un error. Revisa si el mismo patrón de except-ancho existe en los lectores hermanos y lístalos (sin cambiarlos si no toca).
+Tests: (a) el lector devuelve festivos con fixture (Año Nuevo y Reyes presentes → working_days los descuenta); (b) nombre irresoluble → excepción visible, no vacío silencioso; (c) suite completa verde.
+Cosecha: diff, fichero:línea del resolve aplicado en cada consumidor, los tests rojo-antes/verde-después, y la lista de otros except-anchos detectados.
