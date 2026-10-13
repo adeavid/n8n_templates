@@ -44,25 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Run verde en dev (odate=2025-12-31 → partición 2025-12-30). SOLO LECTURA, formato esperado|obtenido|✓/✗. REGLAS FIJAS: en predicciones, TODO medido sobre el lote de HOY por prediction_datetime; e incluye al final la sección de logs.
+SOLO LECTURA. Tres frentes:
 
-A. Run: 5 tareas + duraciones (referencia 45-49 min).
+1. El wheel de utilities (el principal): (a) ¿DÓNDE se referencia utilities-latest-py3-none-any.whl — libraries del job, requirements, plantilla? Valor literal y fichero. (b) ¿Qué ES utilities.spark_utils — la librería de utilidades de plataforma/delphi-models? ¿Qué funciones aporta (la resolución de particiones buena)? (c) ¿Desde cuándo falla? Mira los logs de instalación de los runs del 5-oct y 9-oct: ¿el mismo error? (d) ¿La ruta apunta a un volumen/path que no existe o es el Errno 13 de permisos? NO lo arregles — esto se decide con plataforma.
 
-B. Jobs del install: DDL_STRUCTURES — ¿la migración 002 disparó (ALTER ADD COLUMNS en decisiones) y la 001 quedó en no-op (la tabla final ya tiene el esquema nuevo)? Evidencia del log de cada guarda.
+2. La cadena transport_cost → coste_estimado: ¿el expert lee transport_cost de decisiones y lo escribe como coste_estimado en la final? fichero:línea del mapeo. Si es así, mi expectativa estaba mal y la cadena es correcta — confírmalo.
 
-C. La cadena, certificada en la tabla de DECISIONES (el fix principal): DESCRIBE de cash_supply_optimization: ¿existen ya is_feasible y coste_estimado? En las 2.000 filas de hoy: distribución de is_feasible (0/1, espero mayoría 1), coste_estimado min/max/media (>0 donde hay movimiento), % nulos (~0).
-
-D. Tabla final: 13 columnas contrato CDO · en las ~11 filas: is_feasible con 0/1 REALES (ya no 11/11 nulos), coste_estimado con valores, totalamount poblado.
-
-E. Festivos (el fix B — el otro estreno): en el training de hoy: conteos oficina/local/nacional — todos > 0 (referencia sana: ~6.000/4.000/2+). En el lote de forecasting de hoy: flag nacional en Año Nuevo y Reyes — espero ~2.000 filas marcadas por cada fecha (todas las oficinas). Si algo sigue a 0 → ✗ y para.
-
-F. Predicciones del lote de HOY: 28.000 filas, 0 nulos en los 3 modelos, min/max/media por modelo. OJO — AVISO IMPORTANTE: los valores YA NO deben coincidir con el lote de referencia del 5-oct — con los festivos por fin presentes en las features, los modelos predicen distinto, y eso es lo CORRECTO. No reportes la divergencia como fallo: repórtala como magnitud (diff agregado por modelo) para documentar el efecto del fix de festivos.
-
-G. Decisiones — lo de siempre: 2.000, 0 duplicados, 200 canarios, flags (espero 0, canarios en rango).
-
-H. Logs de las 5 tareas (la regla nueva): lista TODOS los warnings/errores. En particular: “National holiday table is empty or outdated” y “Local holiday data incomplete” deben haber DESAPARECIDO; la validación de tipo nueva no debe haber saltado. Cualquier warning nuevo, lístalo tal cual.
-
-I. start_date: valor efectivo del run (espero default 2022-01-01) y confirmación de que template y job desplegado ya dicen lo mismo.
-
-Si algo sale ✗, repórtalo y para — no corrijas nada.
-Suite completa verde. Cosecha: diff por fix, el test de cadena rojo-antes/verde-después, y confirmación de que la migración 002 pasa los tres caminos en seco.
+3. Cuando SQL_DELPHI_PRE esté RUNNING, completa los N/M: métricas de decisiones (2.000, is_feasible 0/1, transport_cost >0), valores de la tabla final (is_feasible, coste_estimado, totalamount poblados), predicciones del lote de hoy (28.000, 0 nulos, magnitudes), canarios y duplicados. Y el DESCRIBE que confirme el efecto de las guardas.
