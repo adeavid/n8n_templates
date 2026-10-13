@@ -44,4 +44,20 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Desde la sesión de int, SOLO LECTURA: (1) particiones de int_app.delphi.branch_cash_servicing (data_date_part + filas por partición, orden descendente); (2) particiones de int_app.delphi.calendar_datagen; (3) con eso, proponme el odate para el E2E (= última partición de branch + 1 día) y verifica que existe partición de calendario estrictamente anterior a ese odate−1 (regla H10). (4) Confirma también que las columnas de ambas tablas siguen cumpliendo el contrato de las vistas tras la recarga de Agustín (el zip_code nuevo incluido). Respuesta: tabla de particiones + “odate recomendado: X” + check de calendario ✓/✗.
+SOLO LECTURA, formato esperado|obtenido|✓/✗. Contexto: run de mecánica/contrato — forecast de juguete esperado; los warnings de utilities/fallback y de festivos son CONOCIDOS (H14, fix en vuelo): lístalos pero márcalos “esperado”, no como fallo.
+
+A. Run: 5 tareas + duraciones + total (referencia: ~18 min del run mecánico anterior).
+
+B. La migración en int (estreno): DESCRIBE de int_app.delphi.sanes_modelo_predictivo — ¿recreada con 13 columnas del contrato (totalamount, is_feasible INT, coste_estimado DECIMAL)? ¿Y decisiones con is_feasible + transport_cost (migración 002)? ¿La de security_stock intacta?
+
+C. La cadena en su segundo entorno: en las decisiones de hoy: filas (~2.210), duplicados (0), is_feasible con 0/1, transport_cost con valores. En la tabla final: filas, is_feasible/coste_estimado/totalamount poblados (valores de juguete, pero NO nulos).
+
+D. ⭐ LA LECTURA DE GOLD (el pendiente de dos semanas): en los logs/plan de la tarea expert — ¿ejecutó la lectura de pro_common_canales.oficina_operativa.sanes_arqueos? Tres desenlaces posibles, dime cuál: (1) leyó con éxito → cuántas filas trajo y cuántas oficinas del piloto casaron en el join; (2) PERMISSION_DENIED → el error LITERAL completo con la identidad que lo recibió; (3) ni llegó a intentarlo → en qué línea retornó antes y por qué.
+
+E. Predicciones del lote de hoy: 2.210 × 14 = 30.940 filas, 0 nulos en los 3 modelos, magnitudes (juguete: mayoría ~0 con ecos del día real).
+
+F. El zip en acción: ¿las vistas sirvieron sin error y algún camino usa ya el zip_code (el cruce oficina-calendario)? Evidencia breve.
+
+G. Logs de las 5 tareas: lista completa de warnings/errores, separando “esperados” (utilities/fallback/festivos — H14) de cualquier cosa NUEVA.
+
+Si algo inesperado sale ✗, repórtalo y para.
