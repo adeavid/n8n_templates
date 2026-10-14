@@ -44,4 +44,20 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-H5b es un hallazgo documentado de este proyecto: el config loader ignora silenciosamente las claves desconocidas (si una clave se renombra y el código busca la antigua, no falla — usa defaults sin avisar). Instrucción práctica: en esta rama puedes cambiar VALORES de configuración cuanto haga falta, pero NO renombres ni elimines ninguna CLAVE existente; si crees que una clave debe cambiar de nombre, páralo y repórtamelo en vez de hacerlo.”
+cosecha E2E dev (certificación del fix festivos-FQN)
+
+Run verde en dev (odate=2025-12-31 → partición 2025-12-30). SOLO LECTURA, formato esperado|obtenido|✓/✗, predicciones SIEMPRE por el lote de hoy:
+
+A. Run: 5 tareas + duraciones (ref 45-49 min).
+
+B. Logs — el síntoma estrella: lista completa de warnings de las 5 tareas. Deben haber DESAPARECIDO: “National holiday table is empty or outdated” y “Local holiday data incomplete” (los dos, en TODAS las tareas — antes salían en OPTIMIZE y EXPERT). Y confirmar que los 5 de utilities/fallback siguen sin aparecer. Lo que quede, listado literal.
+
+C. working_days_to_trip — la materialidad corregida: las 9 oficinas que daban 14 (esperado 6) — ¿ahora dan 6? Muestra 3-4 valores contrastados con el calendario del horizonte (Año Nuevo y Reyes descontando).
+
+D. Flags de festivos en el forecasting: en el dataset/lote de inferencia de hoy — flag nacional en Año Nuevo y Reyes: espero ~2.000 filas marcadas por fecha (antes: 0). Local/autonómico si aplica en el rango.
+
+E. Idempotencia persiste: la partición 2025-12-30 sigue con UN solo lote (28.000) tras este run — el replace pisando al de ayer, sin acumular.
+
+F. Lo de siempre en exprés: 28.000/2.000/14, 0 nulos en los 3 modelos, decisiones 2.000 sin duplicados con canarios, cadena is_feasible/transport_cost poblada, tabla final 11 con sus 13 columnas.
+
+G. El cambio de baseline (documentar, no asustarse): magnitudes min/max/media por modelo del lote de hoy vs el lote anterior — espero que CAMBIEN: los modelos ahora ven los festivos en las features, y predecir distinto es lo correcto. Reporta el diff como medida del efecto del fix, y marca este lote como nueva referencia definitiva para comparativas futuras.
