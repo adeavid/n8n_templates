@@ -44,11 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-rama fix/lectores-festivos-fqn desde develop. Commit+push por paso.
-
-Causa confirmada: los lectores de festivos (optimize/expert y las features de forecasting) consultan calend_lab_nac_50/calend_lab_loc_50 por nombre corto sin resolver, y un except Exception amplio traga el error y lo convierte en “empty or outdated”.
-
-Resolución de nombres: esos lectores pasan a resolver la tabla por la MISMA vía que el resto del código (resolve_table_name()/la config de PersistenceConfig) — nada de nombres cortos sueltos. Verifica los TRES consumidores: working_days del optimize, el expert, y las holiday-features del dataset de forecasting.
-El except mentiroso, fuera: sustituye el except Exception amplio por manejo honesto — el error real se loguea COMPLETO y la lectura de festivos irresoluble FALLA ALTO (o como mínimo warning con la excepción literal). Un calendario que no se encuentra no es “vacío”: es un error. Revisa si el mismo patrón de except-ancho existe en los lectores hermanos y lístalos (sin cambiarlos si no toca).
-Tests: (a) el lector devuelve festivos con fixture (Año Nuevo y Reyes presentes → working_days los descuenta); (b) nombre irresoluble → excepción visible, no vacío silencioso; (c) suite completa verde.
-Cosecha: diff, fichero:línea del resolve aplicado en cada consumidor, los tests rojo-antes/verde-después, y la lista de otros except-anchos detectados.
+Te adjunto create_datagen_int.sql (el CREATE con el que plataforma va a recrear calendar_datagen en int). SOLO LECTURA + diff: compáralo contra (a) el esquema ACTUAL de int_app.delphi.calendar_datagen y (b) las columnas que consume projection_views.sql (las 8 del calendario) y los lectores de festivos. Tabla: columna | tipo en el CREATE nuevo | tipo actual | ¿la consume alguien? | veredicto (igual / cambió / nueva / desaparece). Si TODO cuadra → “compatible, cero cambios”. Si algo cambia → qué vista/lector habría que ajustar, sin tocarlo aún.
