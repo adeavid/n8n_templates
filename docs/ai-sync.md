@@ -44,10 +44,20 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-rama feature/vocabulario-contrato-nuevo en WORKTREE desde develop. NO se mergea sin mi OK (entra después de la prueba de rendimiento). Commit+push por paso.
+osecha E2E dev: certificación de LECTURA DIRECTA + siembra v2 + festivos en forecasting
 
-Contexto: tras la Historia 1, la capa de lectura traduce el esquema nuevo a nombres internos del contrato viejo (fecha ← calendar_date, etc.) y el código aguas abajo sigue hablando el idioma antiguo — confuso para cualquiera que audite código contra esquema real.
+Run verde en dev sobre la siembra v2. SOLO LECTURA, formato esperado|obtenido|✓/✗, predicciones siempre por el lote de hoy:
 
-FASE 1 — Inventario (solo lectura, enséñamelo antes de tocar): localiza TODO el vocabulario del contrato viejo que sobrevive como nombres internos post-Historia 1: fecha y sus hermanos (nombres de columnas de los calendarios viejos, de branch_360 si queda alguno — tipo feclocal, tifestv o los que aparezcan). Tabla: nombre viejo | nombre en el esquema nuevo | dónde se usa (ficheros, nº de apariciones) | clasificación: (a) interno puro renombrable, (b) frontera que NO se toca (claves de config — H5b, columnas de tablas de SALIDA, fixtures que modelan tablas viejas aposta).
-FASE 2 — Rename mecánico solo de los clasificados (a): el código pasa a usar los nombres del contrato nuevo de punta a punta; el renombre de la capa de lectura desaparece donde quede redundante (leer calendar_date y llamarlo calendar_date). Cero cambios de comportamiento.
-Suite completa verde + paridad re-ejecutada (mismo juez de siempre). Cosecha: inventario, diff, suite, y confirmación de cero claves de config ni esquemas de salida tocados.
+A. Run: 5 tareas + duraciones + total (referencia ~45-58 min; la siembra nueva puede mover tiempos — reporta sin alarma).
+
+B. La siembra v2 sembró lo que debía: pre_app.delphi.branch_cash_servicing — ~1.000 particiones (días hábiles 4 años), zip_code presente, 2.000 oficinas, canarios 0001-0200 con sus saldos · calendar_datagen — 48 snapshots mensuales, festivos reales (Año Nuevo/Reyes presentes en la fuente).
+
+C. ⭐ LECTURA DIRECTA en acción (el certificado de la Historia 1): en los logs/planes de las tareas — las lecturas van A PELO contra branch_cash_servicing y calendar_datagen (FileScan/retrieved con esos nombres, SIN _projection por ningún lado) + PartitionFilters activos. Cita las líneas literales (tipo “retrieved N idcents from pre_app.delphi.branch_cash_servicing”) — son el antes/después para plataforma.
+
+D. ⭐ FESTIVOS — la capa 4 en vivo: (1) dataset de forecasting del lote de hoy: flag nacional en Año Nuevo y Reyes — espero ~2.000 filas marcadas por fecha (el 0/2.000 de la semana pasada, curado); local/autonómico según calendario. (2) working_days_to_trip sigue en 6 (no 14) en las oficinas de siempre. (3) Training: conteos de festivos > 0.
+
+E. Los invariantes: 28.000/2.000/14 en el lote de hoy · 0 nulos en los 3 modelos · UN solo lote en la partición (idempotencia) · decisiones 2.000, 0 duplicados, 200 canarios, flags coherentes · cadena is_feasible (0/1 reales) + transport_cost poblados · tabla final 11 filas / 13 columnas / totalamount-is_feasible-coste_estimado sin nulos.
+
+F. LA BASELINE NUEVA: magnitudes min/max/media por modelo vs el lote anterior — espero que CAMBIEN (los modelos ven festivos por primera vez en las features). Reporta el diff por modelo como medida del efecto, y si D y E cuadran, declara este lote como referencia definitiva del proyecto.
+
+G. Logs: lista completa de warnings de las 5 tareas — espero CERO (ni calendario, ni utilities, ni fallback). Cualquier cosa nueva, literal.
