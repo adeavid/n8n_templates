@@ -44,16 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-rama feature/limite-175-bloqueo-caja desde el develop actual. NO mergear.
+— Fase A-bis (sigue sin tocar código):
 
-Contexto: los agentes colaboradores tienen bloqueo operativo de caja cuando el saldo alcanza el 175% del encaje (encaje = saldo medio mensual de referencia, viene como dato). Hoy el optimizador solo limita el ENVÍO al 160% del encaje; hay que añadir una restricción sobre el SALDO RESULTANTE.
-
-FASE A — inventario, antes de tocar nada (repórtamelo): (1) dónde se aplica hoy el límite del 160% en las restricciones del algoritmo genético — archivo:línea y fórmula exacta; (2) de dónde sale el valor del encaje y con qué nombre; (3) si en ese punto del optimizador está disponible el saldo/balance del día y los flujos previstos del forecast; (4) si existe algún campo que distinga agentes colaboradores del resto de oficinas en los inputs. No implementes hasta reportar.
-
-FASE B — implementación, commits separados:
-
-Nueva restricción en el GA: saldo_estimado_día_entrega + importe_envío ≤ max_balance_pct × encaje, donde el saldo estimado del día de entrega = último saldo conocido + flujos futuros estimados hasta esa fecha (reutiliza lo que el optimizador ya tenga de flujos; si no existe, repórtalo antes de inventar). La restricción del 160% sobre el envío NO se toca: conviven.
-max_balance_pct como parámetro de configuración NUEVO (no renombres ninguna clave existente), default 1.70, con comentario: # margen sobre el 175% real por el decalaje de consumo — pendiente de confirmación funcional. Aplicado a TODAS las oficinas por ahora (decisión funcional abierta: acotarlo a agentes colaboradores si llega el flag).
-Tests: (a) oficina cuyo saldo+envío excedería el umbral → el envío se recorta o se omite y la solución sigue siendo factible; (b) oficina holgada → envío idéntico al de antes del cambio; (c) caso frontera exacto en el umbral; (d) la restricción del 160% sigue operando.
-
-Al final: archivos por commit, tests verdes, y la lista de SUPUESTOS FUNCIONALES que hayas tenido que tomar, marcados para validar con Pablo/Álvaro.
+La variable encaje: ¿de dónde sale exactamente — qué columna de qué tabla de entrada? ¿Hay evidencia de que sea el “saldo medio mensual” que define negocio, o podría ser otro importe (stock de seguridad, balance objetivo…)? Si el encaje del código no es EL encaje de negocio, el 1.60 está capando contra la base equivocada y ahí estaría el agujero. Cita archivo:línea del origen del dato.
+El índice 0 excluido: la comprobación arranca en cash_upper[1:] — ¿qué representa el día 0 y qué pasa si el exceso ocurre justo ese día? ¿Hay entrega posible en el día 0?
+La tolerancia tol: ¿cuánto vale y de dónde sale? ¿Puede permitir rebasar el 1.60 de forma material?
+La reparación: cuando detecta exceso, ¿qué hace exactamente el GA — recorta el envío, programa una retirada (“solicitud de servicio”, como dice el Jira), o descarta el individuo? ¿Las retiradas existen como acción?
