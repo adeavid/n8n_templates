@@ -44,9 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-— Fase A-bis (sigue sin tocar código):
+Fase B en feature/limite-175-bloqueo-caja (commits separados, NO mergear):
 
-La variable encaje: ¿de dónde sale exactamente — qué columna de qué tabla de entrada? ¿Hay evidencia de que sea el “saldo medio mensual” que define negocio, o podría ser otro importe (stock de seguridad, balance objetivo…)? Si el encaje del código no es EL encaje de negocio, el 1.60 está capando contra la base equivocada y ahí estaría el agujero. Cita archivo:línea del origen del dato.
-El índice 0 excluido: la comprobación arranca en cash_upper[1:] — ¿qué representa el día 0 y qué pasa si el exceso ocurre justo ese día? ¿Hay entrega posible en el día 0?
-La tolerancia tol: ¿cuánto vale y de dónde sale? ¿Puede permitir rebasar el 1.60 de forma material?
-La reparación: cuando detecta exceso, ¿qué hace exactamente el GA — recorta el envío, programa una retirada (“solicitud de servicio”, como dice el Jira), o descarta el individuo? ¿Las retiradas existen como acción?
+Nueva restricción de techo duro en el GA: saldo_proyectado ≤ hard_balance_limit_pct × encaje, SIN tolerancia, evaluada en las mismas posiciones que la restricción existente del upper_limit y reparada por el mismo mecanismo (adelantar/crear acción negativa). La restricción actual 1,60+tol NO se toca: conviven, y la nueva solo puede ser más restrictiva.
+hard_balance_limit_pct como clave de configuración NUEVA en los YAML de los 4 entornos, valor 70.0 (mismo convenio que upper_limit_pct: porcentaje sobre el encaje), con comentario: # techo absoluto anti-bloqueo de caja (bloqueo físico al 175%; margen de 5 pts acordado en reu 8-oct).
+Tests: (a) encaje 20.000 — caso que hoy permite saldo 37.000 (1,85×): con el techo queda ≤34.000 y por debajo del bloqueo de 35.000; (b) encaje 100.000 — el techo no muerde nunca antes que el 1,60+tol… [ojo: 1,60×100k+5k=165k < 170k ✓] el comportamiento actual no cambia; (c) frontera exacta en el techo; (d) la reparación genera retirada cuando el techo se excede; (e) la restricción vieja sigue operando.
+NO toques la tolerancia ni el manejo del índice 0: documéntalos en la descripción de la PR como hallazgos pendientes de decisión funcional.
+Al final: archivos por commit, tests verdes, y confirma el lot_size de los YAML de int y pro (para recalcular los números del mensaje si difieren de dev).
