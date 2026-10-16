@@ -44,4 +44,14 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-inventario de lecturas del código de saldos (SOLO LECTURA): Recorre el repo y produce una tabla: para cada tabla/fichero de entrada que el código lee → columnas usadas, tipo esperado, y PARA QUÉ (filtro / feature / join / agregación), con archivo:línea. Marca aparte: (a) columnas usadas en FILTROS de fecha/periodo (ahí vivía el gap de “fecha” que encontró Agustín), (b) claves de join (el contract_id de 4 campos), (c) cualquier columna que no exista en el esquema nuevo que te adjunto [esquema de Agustín]. No propongas cambios: solo el inventario con citas.
+Crea la rama feature/preparacion-release desde develop. NO mergear a develop. Haz CUATRO commits separados, en este orden, cada uno autocontenido y con los tests pasando:
+
+Commit 1 — propagar exit code en run.sh: justo después de la llamada al run, añade: ret_run_code=$? ; si ${ret_run_code} != 0 → echo "ERROR - Processing run for ${APP_NAME}" y exit ${ret_run_code}; si no → echo INFO y exit 0. [adjunta el snippet de Agustín tal cual] Motivo: sin esto el script sale siempre con 0 y Control-M nunca vería un fallo.
+
+Commit 2 — timeout del cliente de polling: añade --timeout $TIMEOUT a la llamada del cliente en run.sh, con TIMEOUT como variable con default real de 10800 (3 horas, generoso a propósito; se ajustará con los tiempos de la prueba de rendimiento — deja un comentario # TODO ajustar tras prueba de rendimiento). Motivo: el cliente por defecto deja de hacer polling a la hora y sale con código 0 aunque el job siga corriendo.
+
+Commit 3 — APP_NAME: en pro-adb/run_env.sh cambia APP_NAME=bb-py-50-… por APP_NAME="artifact". Motivo: el proceso de release exige que la variable valga “artifact”; con el nombre del proyecto, la release falla.
+
+Commit 4 — jubilación de la capa de proyección: elimina el job template de PROJECTION_VIEWS de las plantillas de los 4 entornos, el SQL de las vistas de proyección y toda referencia a ellas. Antes de borrar, verifica con búsqueda global que ningún código las lee (la lectura directa las dejó huérfanas). Corre la suite completa.
+
+Al final: lista de archivos tocados POR COMMIT y resultado de tests. No toques nada fuera de este alcance.
