@@ -44,4 +44,10 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Genera el INSERT INTO...SELECT que duplica la foto data_date_part=2026-10-13 de int_app.delphi.calendar_datagen con data_date_part=DATE’2022-01-01', listando TODAS las columnas explícitamente (nada de SELECT *, que el orden importa). Antes: COUNT de la foto origen. Después: COUNT de la nueva = mismo número, y verifica que la del 13/10 sigue intacta. Dame también el DELETE de rollback. No lo ejecutes — me lo das y lo corro yo.
+ejecutar la re-publicación del calendario y relanzar el e2e. Ejecuta los pasos EN ORDEN y DETENTE ante cualquier condición de aborto:
+
+Preflight: COUNT de la foto origen (data_date_part='2026-10-13') → source_before. COUNT de la partición destino (data_date_part='2022-01-01') → target_before. Si target_before ≠ 0 → ABORTA y repórtame, no insertes nada.
+INSERT: las 41 columnas explícitas. La ÚNICA columna que cambia es data_date_part → DATE’2022-01-01'. calendar_date y todas las demás se copian IDÉNTICAS. Confírmamelo en el reporte citando el SELECT.
+Verificación: (a) source_after == source_before (la foto del 13/10 intacta); (b) copy_after == source_before (la copia completa); (c) muestrea 5 filas de la copia y compáralas con sus gemelas del origen por (zip, calendar_date): TODAS las columnas idénticas salvo data_date_part. Si cualquiera falla → ejecuta el DELETE de rollback, verifica que target vuelve a 0, y ABORTA reportando qué no cuadró.
+Solo si TODO lo anterior pasó: lanza el e2e con odate=2026-09-15 (el jobs run-now de siempre con ese job_parameter) y dame el run_id y el link.
+Reporte final: los 4 conteos, la confirmación de la comparación de filas, y el run lanzado. NO toques branch_cash_servicing, NO toques código, NO relances nada más si el run falla — solo repórtame el error.
