@@ -44,10 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-ejecutar la re-publicación del calendario y relanzar el e2e. Ejecuta los pasos EN ORDEN y DETENTE ante cualquier condición de aborto:
+arqueología de los jobs de carga en int (SOLO LECTURA, no ejecutes ni relances NADA):
 
-Preflight: COUNT de la foto origen (data_date_part='2026-10-13') → source_before. COUNT de la partición destino (data_date_part='2022-01-01') → target_before. Si target_before ≠ 0 → ABORTA y repórtame, no insertes nada.
-INSERT: las 41 columnas explícitas. La ÚNICA columna que cambia es data_date_part → DATE’2022-01-01'. calendar_date y todas las demás se copian IDÉNTICAS. Confírmamelo en el reporte citando el SELECT.
-Verificación: (a) source_after == source_before (la foto del 13/10 intacta); (b) copy_after == source_before (la copia completa); (c) muestrea 5 filas de la copia y compáralas con sus gemelas del origen por (zip, calendar_date): TODAS las columnas idénticas salvo data_date_part. Si cualquiera falla → ejecuta el DELETE de rollback, verifica que target vuelve a 0, y ABORTA reportando qué no cuadró.
-Solo si TODO lo anterior pasó: lanza el e2e con odate=2026-09-15 (el jobs run-now de siempre con ese job_parameter) y dame el run_id y el link.
-Reporte final: los 4 conteos, la confirmación de la comparación de filas, y el run lanzado. NO toques branch_cash_servicing, NO toques código, NO relances nada más si el run falla — solo repórtame el error.
+databricks jobs list --profile cash-supply-int — lista completa. Separa: (a) los nuestros (los del bundle: e2e, DDL, install…) y (b) los que NO son nuestros — candidatos a ser los jobs de carga de Agustín (nombres con load/carga/seed/ingest/calendar/branch/parquet o similares, o creados por otro usuario).
+Para cada candidato: jobs get — y repórtame: run_as (¿el SP?), las tareas y sus rutas de notebook/script, los parámetros (especialmente rutas de origen: volúmenes, paths de parquets), y las últimas ejecuciones con fechas (¿corrió alrededor del 13-14/10, cuando aparecieron las fotos?).
+Si los notebooks/scripts son legibles, ábrelos y dime: ¿qué tabla escriben, en qué modo (overwrite/append/replaceWhere), desde qué ruta leen, y si la ruta/fechas son parámetros o están hardcodeadas?
+Entregable: para calendar y para branch — el job que los cargó, su ruta de origen de datos, y qué habría que tocar (parámetros) para (a) re-publicar la foto del calendario con data_date_part=2022-01-01 y (b) cargar el histórico del branch. SIN ejecutar nada.
