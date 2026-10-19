@@ -44,9 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-arqueología de los jobs de carga en int (SOLO LECTURA, no ejecutes ni relances NADA):
+mapa de autoservicio (SOLO LECTURA, cero escrituras, cero runs):
 
-databricks jobs list --profile cash-supply-int — lista completa. Separa: (a) los nuestros (los del bundle: e2e, DDL, install…) y (b) los que NO son nuestros — candidatos a ser los jobs de carga de Agustín (nombres con load/carga/seed/ingest/calendar/branch/parquet o similares, o creados por otro usuario).
-Para cada candidato: jobs get — y repórtame: run_as (¿el SP?), las tareas y sus rutas de notebook/script, los parámetros (especialmente rutas de origen: volúmenes, paths de parquets), y las últimas ejecuciones con fechas (¿corrió alrededor del 13-14/10, cuando aparecieron las fotos?).
-Si los notebooks/scripts son legibles, ábrelos y dime: ¿qué tabla escriben, en qué modo (overwrite/append/replaceWhere), desde qué ruta leen, y si la ruta/fechas son parámetros o están hardcodeadas?
-Entregable: para calendar y para branch — el job que los cargó, su ruta de origen de datos, y qué habría que tocar (parámetros) para (a) re-publicar la foto del calendario con data_date_part=2022-01-01 y (b) cargar el histórico del branch. SIN ejecutar nada.
+Lista RECURSIVA de /Volumes/int_app/delphi/vol_data/ completo: ficheros con nombre, tamaño y fecha. Candidatos a parquet histórico de branch = tamaño muy superior a 790KB o nombres con branch/hist/transaction.
+Lista los demás volúmenes a los que mi usuario tiene acceso (int y pro) y repite la búsqueda rápida en ellos.
+Permisos, leyendo ACLs (sin probar escrituras): ¿puedo escribir ficheros en el volumen temporary_data? ¿puedo lanzar el job Workflow_on_demand (get-permissions del job)? ¿puedo crear un job con run_as del SP?
+Entregable: tabla “puedo yo solo / no puedo”, y si aparece el parquet histórico, su ruta exacta y una lectura de su rango de transaction_date (SELECT sobre el fichero, solo lectura).
