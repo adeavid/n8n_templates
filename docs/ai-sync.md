@@ -44,11 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-edactar comentario de cierre para la historia de Jira del límite 175% (SOLO LECTURA, no toques código):
-
-diagnóstico del run fallido + ventana factible de odate (SOLO LECTURA):
-
-Del último run fallido: tarea exacta que falló y el error literal (las 3-5 líneas del log). No asumas que es el mismo error de antes — compruébalo.
-Query a int_app.delphi.branch_cash_servicing: MIN(transaction_date), MAX(transaction_date), COUNT(*), y los DISTINCT data_date_part con filas por partición.
-Query a int_app.delphi.calendar_datagen: DISTINCT data_date_part con filas, y MIN/MAX de la fecha de calendario que cubre cada foto.
-Con esos números y los filtros reales del código (la ventana de 13 días de oficinas, el cutoff odate-1 del calendario, el anti-leakage), calcula: ¿existe algún odate que satisfaga TODAS las condiciones a la vez? Si sí, dime cuál y por qué; si no, dime exactamente qué dato falta para que exista (¿fotos de calendario ≤ X? ¿branch con transaction_date hasta Y?). No relances nada.
+Genera el INSERT INTO...SELECT que duplica la foto data_date_part=2026-10-13 de int_app.delphi.calendar_datagen con data_date_part=DATE’2022-01-01', listando TODAS las columnas explícitamente (nada de SELECT *, que el orden importa). Antes: COUNT de la foto origen. Después: COUNT de la nueva = mismo número, y verifica que la del 13/10 sigue intacta. Dame también el DELETE de rollback. No lo ejecutes — me lo das y lo corro yo.
