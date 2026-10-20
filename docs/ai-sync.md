@@ -44,8 +44,8 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-forense del run 749508124467044 (SOLO LECTURA):
-(A) Festivos del horizonte: traza la cadena en forecasting: ¿cuántas filas devolvió la lectura del calendario tras el filtro por rol (local/autonómico)? ¿el cruce zip→oficina casa — cuántos zip_code del branch real existen en la foto del 13/10? ¿Se filtra por rol ANTES de resolver la última foto (el orden frágil que señalaste)? Archivo:línea de cada paso y dónde se pierde el dato.
-(B) Cadena optimize: ¿de qué tabla/columnas lee security stock y cuántas filas devolvió para este lote? ¿Existe el fallback del 30% y por qué no aplicó? ¿Alguno de los renombres tocó esa lectura? Compara con el run verde del 14-oct: ¿qué leyó entonces y cuántas filas?
-(C) Las 565 oficinas en training pero no en forecasting: ¿cuál es el criterio (¿sin datos en la ventana reciente?)? Muestra 5 ejemplos con su último transaction_date (¿oficinas cerradas?).
-Nada de fixes todavía: diagnóstico con citas, y lo contrastamos con el re-run de dev.
+rama fix/cruce-zip-festivos-y-config desde develop, commits separados:
+Commit 1 — el cruce zip (H16): en la capa de lectura directa, conserva zip_code en la proyección del branch (la tabla lo trae; la vista vieja lo proyectaba y la lectura directa lo perdió). En forecasting, cruza los calendarios LOCAL/AUTONÓMICO por zip_code+fecha (el nacional sigue por fecha/país). Espejo del training, que sí cruza bien — iguala los dos caminos. Test de aceptación con el caso real: una foto con festivos locales en horizonte + oficinas con zip → flags >0 (y un test que falle si alguien vuelve a comparar branch_id con zip_code: cero matches = error, no silencio).
+Commit 2 — propagación de config: en el path RunOptimizeTask→ProblemConfig, pasa también upper_limit_pct y lower_limit_pct desde la config (hoy solo viaja hard_balance_limit_pct y los otros caen a defaults). Test: los tres valores del YAML llegan al ProblemConfig reconstruido.
+Commit 3 — fichaje, no fix: el filtro de rol deja pasar filas ‘F’ que el builder ignora — documentado en la PR como decisión pendiente.
+Tests completos en verde. NO mergear sin mi OK.
