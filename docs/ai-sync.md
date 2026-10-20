@@ -44,12 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-cosecha del e2e de dev del FLUJO FINAL (lectura directa + renombres + preparación-release + techo 175). SOLO LECTURA:
-A. Identifica el run: run_id, fecha, resultado por tarea y DURACIÓN por tarea y total (compara con los ~45-49 min históricos de dev).
-B. El lote: todo medido por el prediction_datetime del lote de ese run (la partición de dev acumula lotes viejos — regla de siempre).
-C. Conteos: oficinas de la siembra × 14 días en predicciones, 0 nulos en los 3 modelos; decisiones y tabla final pobladas (13 columnas, is_feasible/coste con valores).
-D. Renombres vivos: en los logs de las 5 tareas, CERO referencias a la columna vieja fecha y cero AnalysisException de columnas; las lecturas usan calendar_date.
-E. Festivos: flags > 0 (la siembra tiene 48 fotos mensuales); working_days del horizonte verificado CONTANDO con el calendario sembrado (no asumas el número).
-F. El techo nuevo: hard_balance_limit_pct=70.0 cargado en el run (config/parámetros); reporta si hubo activaciones/retiradas por el techo o “cargado sin activaciones” (legítimo con la siembra).
-G. Warnings de aplicación: CERO (los de utilities deben seguir muertos); ruido de infra listado aparte.
-H. Veredicto: compara los conteos contra la última cosecha certificada de dev — iguales = los tres merges no alteraron el comportamiento; cualquier diferencia, explicada o fichada.
+relanzar y diff-cosecha del flujo final en dev: (1) Lanza el e2e de dev con los parámetros de siempre (el artefacto actual es el del 19/10 ~11:04 — confirma antes que wheel y config no han cambiado desde entonces). (2) Al terminar, cosecha SOLO el diff contra el run 688598294109513: mismos conteos (2.920.000 training / 28.000 predicciones / 2.000 oficinas / flags 80k-16k-26k / expert 10×8+1×2), duración comparable (~41-48 min), cero referencias a columna vieja, y DOS cosas nuevas que el anterior no podía dar: (a) evidencia de que el run cargó la wheel nueva (versión del artefacto en los logs de instalación del cluster) y (b) hard_balance_limit_pct=70.0 presente en la config efectiva del run. (3) LGBM: reporta media/mín/máx otra vez — tres puntos ya nos dicen si la deriva es ruido estable o crece. Como siempre: todo por el prediction_datetime del lote nuevo.
