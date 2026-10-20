@@ -44,9 +44,11 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Cambia de estrategia: nada de jobs reset (reemplazo total). Usa databricks jobs update con new_settings PARCIAL, que solo toca los campos que envías:
+El fallo fue de permisos del SP sobre mi notebook personal — ya se lo he compartido con Can Run [o: cópialo a /Workspace/Shared/calendar_backfill_insert y usa esa ruta]. Repite el ciclo exacto que ya funcionó:
 
-Del JSON de respaldo, copia el array tasks EXACTO y cambia únicamente el notebook_path de la tarea al mío (.../calendar_backfill_insert). Primer intento MINIMAL: jobs update --json '{"job_id": 35319055899581, "new_settings": {"tasks": [<la tarea con mi notebook>]}}' — sin tocar clusters ni nada más. Si la tarea referencia el cluster a nivel de job, esto no debería despertar la validación del cluster_log_conf.
-Si la validación vuelve a rechazar por el dbfs:/cluster-logs: repite el update quitando SOLO ese campo (cluster_log_conf) del payload — y DÉJAMELO ANOTADO en el reporte, porque entonces la restauración no podrá ser byte-idéntica (ese campo ya no es re-enviable por nadie) y tengo que decírselo a Agustín.
-Lanza el run UNA vez. Luego restaura con el mismo método: jobs update parcial devolviendo el notebook_path original (y el cluster_log_conf solo si el paso 2 no lo tocó). Verifica con jobs get + diff contra el respaldo, aceptando como única diferencia legítima la que hayas anotado en el paso 2.
-El resto igual: verificación SQL de los 4 conteos + muestreo de 5 filas + rollback por escrito sin ejecutar. Si el update falla también en modo parcial y minimal → PARA y repórtame el error literal: pasaremos al plan C.
+Verifica que el SP tiene acceso al notebook (lee los permisos del objeto si puedes; si no, seguimos igual — el run lo dirá).
+jobs update parcial → notebook_path a mi notebook [ruta definitiva] (mismo payload mínimo de antes).
+Lanza UNA vez. Autorizado este run-now.
+Pase lo que pase: restaura con jobs update parcial + diff contra el respaldo (como la vez anterior, que quedó limpio).
+Si el run va verde: verificación SQL de los 4 conteos cuando el warehouse salga de STARTING + muestreo de 5 filas + rollback por escrito.
+Si falla por OTRA causa: restaura, no reintentes, repórtame el error literal.
