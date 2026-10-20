@@ -44,9 +44,12 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-mapa de autoservicio (SOLO LECTURA, cero escrituras, cero runs):
-
-Lista RECURSIVA de /Volumes/int_app/delphi/vol_data/ completo: ficheros con nombre, tamaño y fecha. Candidatos a parquet histórico de branch = tamaño muy superior a 790KB o nombres con branch/hist/transaction.
-Lista los demás volúmenes a los que mi usuario tiene acceso (int y pro) y repite la búsqueda rápida en ellos.
-Permisos, leyendo ACLs (sin probar escrituras): ¿puedo escribir ficheros en el volumen temporary_data? ¿puedo lanzar el job Workflow_on_demand (get-permissions del job)? ¿puedo crear un job con run_as del SP?
-Entregable: tabla “puedo yo solo / no puedo”, y si aparece el parquet histórico, su ruta exacta y una lectura de su rango de transaction_date (SELECT sobre el fichero, solo lectura).
+cosecha del e2e de dev del FLUJO FINAL (lectura directa + renombres + preparación-release + techo 175). SOLO LECTURA:
+A. Identifica el run: run_id, fecha, resultado por tarea y DURACIÓN por tarea y total (compara con los ~45-49 min históricos de dev).
+B. El lote: todo medido por el prediction_datetime del lote de ese run (la partición de dev acumula lotes viejos — regla de siempre).
+C. Conteos: oficinas de la siembra × 14 días en predicciones, 0 nulos en los 3 modelos; decisiones y tabla final pobladas (13 columnas, is_feasible/coste con valores).
+D. Renombres vivos: en los logs de las 5 tareas, CERO referencias a la columna vieja fecha y cero AnalysisException de columnas; las lecturas usan calendar_date.
+E. Festivos: flags > 0 (la siembra tiene 48 fotos mensuales); working_days del horizonte verificado CONTANDO con el calendario sembrado (no asumas el número).
+F. El techo nuevo: hard_balance_limit_pct=70.0 cargado en el run (config/parámetros); reporta si hubo activaciones/retiradas por el techo o “cargado sin activaciones” (legítimo con la siembra).
+G. Warnings de aplicación: CERO (los de utilities deben seguir muertos); ruido de infra listado aparte.
+H. Veredicto: compara los conteos contra la última cosecha certificada de dev — iguales = los tres merges no alteraron el comportamiento; cualquier diferencia, explicada o fichada.
