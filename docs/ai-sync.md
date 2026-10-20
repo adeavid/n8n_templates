@@ -44,15 +44,9 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-Repite SOLO la consulta de lectura con salida cruda:
+Cambia de estrategia: nada de jobs reset (reemplazo total). Usa databricks jobs update con new_settings PARCIAL, que solo toca los campos que envías:
 
-databricks jobs list-runs --job-id 35319055899581 --active-only --profile cash-supply-int --output json
-
-y enséñame el JSON tal cual, sin asumir forma. Reglas de decisión:
-
-Si la clave runs no existe o es lista vacía → el job está libre: continúa con los pasos 2-6 del plan original.
-Si hay elementos, léeme de cada uno run_id, state (life_cycle_state/result_state) y start_time: si todos están TERMINADOS (a veces el CLI devuelve metadatos residuales pese al --active-only) → el job está libre, continúa.
-Solo si hay un run en RUNNING/PENDING/QUEUED → PARA del todo y repórtamelo con su start_time — significaría que alguien (probablemente Agustín) está usando el job ahora mismo, y en ese caso no lo tocamos ni esperamos en bucle: me lo dices y decido yo.
-Si el JSON sigue siendo ininterpretable, pégamelo entero y para.
-
-Recordatorio del resto: tras el run del paso 3, restauras la definición original con el JSON de respaldo AUNQUE la ejecución falle, y el diff de restauración va antes que la verificación de la tabla.
+Del JSON de respaldo, copia el array tasks EXACTO y cambia únicamente el notebook_path de la tarea al mío (.../calendar_backfill_insert). Primer intento MINIMAL: jobs update --json '{"job_id": 35319055899581, "new_settings": {"tasks": [<la tarea con mi notebook>]}}' — sin tocar clusters ni nada más. Si la tarea referencia el cluster a nivel de job, esto no debería despertar la validación del cluster_log_conf.
+Si la validación vuelve a rechazar por el dbfs:/cluster-logs: repite el update quitando SOLO ese campo (cluster_log_conf) del payload — y DÉJAMELO ANOTADO en el reporte, porque entonces la restauración no podrá ser byte-idéntica (ese campo ya no es re-enviable por nadie) y tengo que decírselo a Agustín.
+Lanza el run UNA vez. Luego restaura con el mismo método: jobs update parcial devolviendo el notebook_path original (y el cluster_log_conf solo si el paso 2 no lo tocó). Verifica con jobs get + diff contra el respaldo, aceptando como única diferencia legítima la que hayas anotado en el paso 2.
+El resto igual: verificación SQL de los 4 conteos + muestreo de 5 filas + rollback por escrito sin ejecutar. Si el update falla también en modo parcial y minimal → PARA y repórtame el error literal: pasaremos al plan C.
