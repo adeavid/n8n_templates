@@ -44,15 +44,15 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-PROMPT (sesión nueva) — Operación: duplicar una foto de calendario en Databricks INT re-etiquetando su partición lógica. SOLO los pasos indicados, EN ORDEN, y aborta ante cualquier fallo.
+Repite SOLO la consulta de lectura con salida cruda:
 
-Contexto: Workspace de integración, perfil CLI cash-supply-int. La tabla int_app.delphi.calendar_datagen (Delta, liquid-clustered por data_date_part, 41 columnas) contiene UNA sola foto: data_date_part = DATE'2026-10-13', con 3.746.176 filas que cubren calendar_date de 2022-01-01 a 2026-12-13. Necesito duplicar esa foto con etiqueta data_date_part = DATE'2022-01-01' (mismo contenido; es un backfill para que el anti-leakage del software la considere elegible en fechas históricas). Mi usuario NO tiene MODIFY sobre la tabla, pero soy miembro de gr_san_azr_apl_delphi_ho_int, que tiene CAN_MANAGE sobre el job 35319055899581 (Workflow_on_demand), que corre como el service principal sanp3glbsp4delphiauth001-sp402 (ese SP sí tiene MODIFY). La vía: repuntar temporalmente ese job a un notebook mío, correrlo una vez, y restaurarlo.
+databricks jobs list-runs --job-id 35319055899581 --active-only --profile cash-supply-int --output json
 
-Pasos:
+y enséñame el JSON tal cual, sin asumir forma. Reglas de decisión:
 
-databricks jobs get 35319055899581 --profile cash-supply-int → guarda el JSON COMPLETO de la definición en un fichero local (es el restore; si no puedes leerla, ABORTA). Comprueba que el job no tiene ningún run activo.
-Crea en MI carpeta de workspace un notebook calendar_backfill_insert que haga, en este orden: (a) preflight: source_before = COUNT de la foto 2026-10-13 (esperado 3.746.176) y target_before = COUNT de la partición 2022-01-01 — si target_before ≠ 0, lanza excepción y no insertes; (b) el INSERT INTO…SELECT con las 41 columnas listadas explícitamente (nada de SELECT *): la ÚNICA columna que cambia es data_date_part → DATE'2022-01-01'; calendar_date y todas las demás se copian idénticas; (c) verificación: source_after == source_before Y copy_after == source_before — si algo no cuadra, lanza excepción (el job debe quedar ROJO, nunca verde con datos a medias). SIN ningún DELETE en el notebook.
-Actualiza la definición del job 35319055899581 para que su tarea apunte a mi notebook (NO toques run_as ni nada más). Lánzalo UNA vez y espera el resultado.
-Pase lo que pase en 3: restaura el job con el JSON del paso 1 y enséñame un diff confirmando que la definición quedó idéntica a la original.
-Verifica por SQL (warehouse SQL_DELPHI_INT): la foto 2026-10-13 sigue con 3.746.176 filas y la nueva 2022-01-01 tiene 3.746.176. Muestrea 5 filas de la copia contra sus gemelas del origen por (zip_code, calendar_date): todo idéntico salvo data_date_part. Dame por escrito el DELETE de rollback (DELETE FROM int_app.delphi.calendar_datagen WHERE data_date_part = DATE'2022-01-01') sin ejecutarlo.
-NO lances ningún otro job (ni el e2e, ni los notebooks queries/queries_load del job original — ese par de notebooks BORRA tablas). No toques branch_cash_servicing. Reporte final: los 4 conteos, el diff de la restauración, y el estado del job original.
+Si la clave runs no existe o es lista vacía → el job está libre: continúa con los pasos 2-6 del plan original.
+Si hay elementos, léeme de cada uno run_id, state (life_cycle_state/result_state) y start_time: si todos están TERMINADOS (a veces el CLI devuelve metadatos residuales pese al --active-only) → el job está libre, continúa.
+Solo si hay un run en RUNNING/PENDING/QUEUED → PARA del todo y repórtamelo con su start_time — significaría que alguien (probablemente Agustín) está usando el job ahora mismo, y en ese caso no lo tocamos ni esperamos en bucle: me lo dices y decido yo.
+Si el JSON sigue siendo ininterpretable, pégamelo entero y para.
+
+Recordatorio del resto: tras el run del paso 3, restauras la definición original con el JSON de respaldo AUNQUE la ejecución falle, y el diff de restauración va antes que la verificación de la tabla.
