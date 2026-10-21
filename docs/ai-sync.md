@@ -44,11 +44,14 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-El fallo fue de permisos del SP sobre mi notebook personal — ya se lo he compartido con Can Run [o: cópialo a /Workspace/Shared/calendar_backfill_insert y usa esa ruta]. Repite el ciclo exacto que ya funcionó:
-
-Verifica que el SP tiene acceso al notebook (lee los permisos del objeto si puedes; si no, seguimos igual — el run lo dirá).
-jobs update parcial → notebook_path a mi notebook [ruta definitiva] (mismo payload mínimo de antes).
-Lanza UNA vez. Autorizado este run-now.
-Pase lo que pase: restaura con jobs update parcial + diff contra el respaldo (como la vez anterior, que quedó limpio).
-Si el run va verde: verificación SQL de los 4 conteos cuando el warehouse salga de STARTING + muestreo de 5 filas + rollback por escrito.
-Si falla por OTRA causa: restaura, no reintentes, repórtame el error literal.
+cosecha de LA PRUEBA COMPLETA (int, odate=2026-10-10, SOLO LECTURA):
+(1) Wheel y config: el run carga la wheel nueva (post-merge de fix/cruce-zip) — ruta/SHA — y la config con hard_balance_limit_pct=70.0.
+(2) Tiempos por tarea y total (referencia: 21:40 el lunes; el fix del zip no debería mover la aguja).
+(3) Lote por prediction_datetime: predicciones = oficinas×14, 0 nulos/duplicados en 3 modelos.
+(4) Training CON festivos por fin: flags nacionales/locales/autonómicos > 0 sobre el histórico completo (la foto 2022-01-01 las hace elegibles) — reporta conteos.
+(5) ⭐ El fix del zip, validado con número: calcula desde la foto los pares oficina-fecha con festivo esperados en el horizonte 10–23/10 (el 12-oct nacional debe marcar TODAS las oficinas; locales los que toque) y compáralo con lo marcado en el dataset de forecast. Esperado vs observado, cero a cero no vale.
+(6) ⭐ La cadena COMPLETA por fin: cashflow de la partición 09/10 con filas > 0 → optimize escribe decisiones (is_feasible/transport_cost con valores; fallback 30% operando si security stock sigue vacío) → expert produce la salida de pilotos → tabla final poblada con sus 13 columnas.
+(7) El techo del 175 ante encajes reales: ¿cuántas oficinas tienen encaje < 33.333€ y hubo alguna activación/retirada del techo? Primera vez que puede morder de verdad.
+(8) Propagación de config (el fix 2): upper/lower_limit_pct del YAML llegan al ProblemConfig — evidencia en logs o valores efectivos.
+(9) Warnings de aplicación (los 14 UserWarnings de festivos nulos deben haber DESAPARECIDO o reducirse a las 565 oficinas sin datos recientes), lecturas a pelo, cero referencias viejas.
+(10) Magnitudes por modelo (media/min/max) — la base de la comparativa con Pablo/Álvaro.
