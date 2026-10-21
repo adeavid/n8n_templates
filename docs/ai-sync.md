@@ -44,14 +44,4 @@ Goal: compile the most advanced n8n templates we can find for **chatbots**, **Ti
 ## Activity Log
 - *[2025-10-29 20:01]* Codex A: Planning + starting chatbot template research; need external search results to shortlist.
 - *[2025-10-29 20:03]* Codex A: Logged five advanced chatbot templates in `research/chatbots.md`; ready for other agents to mirror structure.
-cosecha de LA PRUEBA COMPLETA (int, odate=2026-10-10, SOLO LECTURA):
-(1) Wheel y config: el run carga la wheel nueva (post-merge de fix/cruce-zip) — ruta/SHA — y la config con hard_balance_limit_pct=70.0.
-(2) Tiempos por tarea y total (referencia: 21:40 el lunes; el fix del zip no debería mover la aguja).
-(3) Lote por prediction_datetime: predicciones = oficinas×14, 0 nulos/duplicados en 3 modelos.
-(4) Training CON festivos por fin: flags nacionales/locales/autonómicos > 0 sobre el histórico completo (la foto 2022-01-01 las hace elegibles) — reporta conteos.
-(5) ⭐ El fix del zip, validado con número: calcula desde la foto los pares oficina-fecha con festivo esperados en el horizonte 10–23/10 (el 12-oct nacional debe marcar TODAS las oficinas; locales los que toque) y compáralo con lo marcado en el dataset de forecast. Esperado vs observado, cero a cero no vale.
-(6) ⭐ La cadena COMPLETA por fin: cashflow de la partición 09/10 con filas > 0 → optimize escribe decisiones (is_feasible/transport_cost con valores; fallback 30% operando si security stock sigue vacío) → expert produce la salida de pilotos → tabla final poblada con sus 13 columnas.
-(7) El techo del 175 ante encajes reales: ¿cuántas oficinas tienen encaje < 33.333€ y hubo alguna activación/retirada del techo? Primera vez que puede morder de verdad.
-(8) Propagación de config (el fix 2): upper/lower_limit_pct del YAML llegan al ProblemConfig — evidencia en logs o valores efectivos.
-(9) Warnings de aplicación (los 14 UserWarnings de festivos nulos deben haber DESAPARECIDO o reducirse a las 565 oficinas sin datos recientes), lecturas a pelo, cero referencias viejas.
-(10) Magnitudes por modelo (media/min/max) — la base de la comparativa con Pablo/Álvaro.
+evidencia de los 11 casos del techo (SOLO LECTURA): Sobre la tabla de decisiones del lote del run 906291497963582: (1) lista las oficinas con is_feasible=0 cuyo balance proyectado máximo supera 1,70 × encaje — columnas: idcent, encaje, balance máximo proyectado, ratio balance/encaje, y las flags de transporte/retirada (esperadas a 0); join con branch para el zip. Ordenada por ratio descendente — deben salir las 11 (9 de ellas >1,75). (2) Contexto: las 38 oficinas con encaje <33.333€ y su ratio. (3) Confirma el embudo 2.984 → 2.102 con cashflow → 2.101 decisiones → 31 pilotos en la final, y por qué 31 de 36 (¿los 5 sin cashflow el 09/10?). Entregable: las queries SQL tal cual para pegar en el editor + la tabla de resultados.
